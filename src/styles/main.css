@@ -1,0 +1,277 @@
+/* Import Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400&family=Poppins:wght@900&display=swap');
+
+/* Import react-tabs CSS */
+@import 'react-tabs/style/react-tabs.css';
+
+/* Global Styles */
+body {
+  @apply bg-gradient-to-b from-pathway-light to-gray-100;
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  color: #333;
+}
+
+@layer components {
+  /* Page title (already well‑styled by .page-heading) */
+  .page-heading {
+    @apply text-4xl sm:text-5xl font-extrabold text-pathway-primary mb-8 text-center;
+  }
+
+  /* Section titles with icon (e.g. topic headings in Action Plan) */
+  .section-heading {
+    @apply text-3xl sm:text-4xl font-semibold flex items-center mb-6;
+  }
+
+  /* Sub‑section heading (your h3 replacement) */
+  .subheading {
+    @apply text-xl sm:text-xl font-medium mb-4 mt-6;
+  }
+
+  /* Inline label for “Question:”, “Your answer:”, etc. */
+  .item-label {
+    @apply font-semibold text-base;
+  }
+
+  /* Container for each Q&A block */
+  .item-block {
+    @apply bg-gray-50 p-4 rounded-md;
+  }
+
+  .btn, button {
+    @apply bg-pathway-primary text-white mt-6 inline-block px-6 py-3 rounded-[2rem] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary;
+  }
+}
+
+
+
+/* Define color variables */
+:root {
+  --in-progress: #666666;
+  --leading: #2ecc71;
+  --advancing: #f1c40f;
+  --developing: #e67e22;
+  --needs-improvement: #e74c3c;
+}
+
+button, .a11y-button {
+  @apply px-6 py-3 rounded-[2rem] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary;
+  /* Fallback for non-Tailwind environments */
+  padding: 0.75rem 1.5rem;
+  border-radius: 2rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+main {
+  padding: 20px; /* Uniform padding for all pages */
+  margin-top: 5rem;
+}
+
+/* Header Styles */
+.header {
+  @apply w-full fixed top-0 z-10 bg-white shadow-md;
+}
+.header__container { @apply p-0 flex justify-between items-center p-4; }
+.header__logo { @apply h-10 md:h-11; }
+.header__nav { @apply flex; }
+.header__nav-list { @apply flex space-x-4; }
+.header__nav-item {}
+.header__nav-link {
+  @apply text-black hover:text-pathway-dark transition;
+}
+.header__nav-link.active::before {
+  content: '';
+  @apply w-2 h-2 bg-leading rounded-full mr-1.5 inline-block align-middle;
+}
+
+/* Home Page Styles */
+.home-page { @apply pt-16 text-center; }
+
+/* Results Page Styles */
+.results-page { @apply pt-16; }
+.results-page__no-results { @apply text-gray-600 text-center; }
+
+/* Score Card Styles */
+.score-card { @apply text-center mb-8 p-6; }
+.score-card__title { @apply text-4xl; }
+.score-card__canvas { @apply mx-auto block; }
+.score-card__value { @apply text-2xl mt-2; }
+.score-card__label { @apply text-gray-600 mt-1; }
+
+/* Topic Section Styles */
+.topic-section { @apply text-center mb-8 p-6; }
+.topic-section__title { @apply text-2xl mb-4; }
+.topic-section__canvas { @apply mx-auto block mb-4; }
+.topic-section__grid { @apply grid grid-cols-1 sm:grid-cols-2 gap-4;}
+.topic-section__item { @apply text-center; }
+.topic-section__icon-container {  @apply w-16 h-16 flex items-center justify-center mx-auto;}
+.topic-section__value { @apply text-2xl mt-2; }
+.topic-section__label { @apply text-gray-600 mt-1; }
+.pillars-container > .topic-section:nth-of-type(2) .topic-section__grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4;
+}
+
+/* Auth Container Styles */
+.auth-container { @apply pt-16 text-center; }
+.auth-container__title { @apply text-2xl text-pathway-primary mb-4; }
+.auth-container input {
+  @apply p-2 rounded-[1rem] mb-2 w-full border border-gray-300;
+}
+
+/* Color Classes */
+.in-progress { @apply text-in-progress; }
+.leading { @apply text-leading; }
+.advancing { @apply text-advancing; }
+.developing { @apply text-developing; }
+.needs-improvement { @apply text-needs-improvement; }
+
+/* Tab Styling */
+.tab-list {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  border: 1px solid #e5e7eb;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  background-color: #f9fafb;
+}
+
+.tab-active {
+  background-color: #fff;
+  font-weight: bold;
+  border-bottom: 2px solid #3b82f6;
+}
+
+.tab-inactive:hover {
+  background-color: #e5e7eb;
+}
+
+/* Question Styling */
+.question-block {
+  padding: 15px;
+}
+
+/* Content Section Styles */
+.content-section {
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+}
+
+/* Dropdown Styling */
+.question-block select {
+  width: 100%; /* Full width by default (small screens) */
+}
+
+@media (min-width: 768px) {
+  .question-block select {
+    width: 50%; /* Half width on bigger screens */
+  }
+}
+
+/* Page Heading Styles */
+.page-heading {
+  @apply text-4xl text-pathway-primary mb-6 text-center;
+}
+
+/* Progress Bar Styles */
+.a11y-progress {
+  width: 100%;
+  height: 30px; /* Increased height to accommodate text */
+  background-color: #e5e7eb;
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+}
+
+.a11y-progress-bar {
+  height: 100%;
+  background-color: #3b82f6;
+  transition: width 0.3s ease;
+}
+
+.a11y-progress span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  text-align: center;
+}
+
+/* Icon Option Styling */
+.question-block .flex {
+  gap: 1rem;
+}
+
+.question-block label {
+  cursor: pointer;
+}
+
+.question-block input:checked + div {
+  border-color: #3b82f6;
+  background-color: #e0f2fe;
+}
+
+.question-block div {
+  transition: all 0.2s ease;
+}
+
+/* Results page */
+.pillars-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 640px) {
+  .home-page { @apply pt-16; }
+  .results-page { @apply pt-16; }
+  .auth-container { @apply pt-16; }
+  .score-card { @apply p-6; }
+  .topic-section { @apply p-6; }
+  .topic-section__title { @apply text-xl; }
+  .topic-section__grid { @apply grid-cols-1; }
+  .header__nav-list { @apply flex-col space-y-2; }
+  .header__logo { @apply h-8; }
+  button, .a11y-button { @apply px-4 py-2; }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .home-page { @apply pt-16; }
+  .results-page { @apply pt-16; }
+  .auth-container { @apply pt-16; }
+  .score-card { @apply p-6; }
+  .topic-section { @apply p-6; }
+  .header__logo { @apply h-10; }
+}
+
+@media (min-width: 1025px) {
+  .header__nav-link:hover { @apply text-pathway-dark underline; }
+  button:hover, .a11y-button:hover { @apply shadow-md; }
+  .pillars-container {
+    flex-direction: row;
+  }
+  .pillars-container > * {
+    flex: 1;
+  }
+}
