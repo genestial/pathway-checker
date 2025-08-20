@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, Component } from 'react';
 import { Link } from 'react-router-dom';
 import { db } from '../firebase';
-// ⬇️ Added setDoc here
 import { doc, onSnapshot, getDoc, setDoc } from 'firebase/firestore';
 import ScoreCard from '../components/ScoreCard';
 import TopicSection from '../components/TopicSection';
+import PageHero from '../components/PageHero';
 import questions from '../data/questions';
+
+// topic icons (bundled via Vite from src/assets)
 import accessibilityIcon from '../assets/icons/accessibility.png';
 import wasteIcon from '../assets/icons/waste.png';
 import transportIcon from '../assets/icons/transport.png';
@@ -18,11 +20,7 @@ import waterIcon from '../assets/icons/water.png';
 
 export class ErrorBoundary extends Component {
   state = { hasError: false };
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
+  static getDerivedStateFromError() { return { hasError: true }; }
   render() {
     if (this.state.hasError) {
       return (
@@ -56,11 +54,8 @@ const ResultsPage = ({ user }) => {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data().responses || {};
-          console.log('Initial fetched responses structure:', docSnap.data());
           setResponses(data);
         } else {
-          console.log('No document exists, initializing with empty responses');
-          // ⬇️ This now works because setDoc is imported
           await setDoc(docRef, { responses: {} }, { merge: true });
         }
         const unsubscribe = onSnapshot(
@@ -68,7 +63,6 @@ const ResultsPage = ({ user }) => {
           (snap) => {
             if (snap.exists()) {
               const data = snap.data().responses || {};
-              console.log('Real-time fetched responses:', data);
               setResponses(data);
             }
           },
@@ -84,13 +78,22 @@ const ResultsPage = ({ user }) => {
     fetchResponses();
   }, [user]);
 
+  const getOptionValue = (question, response) => {
+    if (response === undefined || response === null) return 0;
+    const numericValue = parseInt(response, 10);
+    if (!isNaN(numericValue) && [0, 1, 2, -1].includes(numericValue)) {
+      return numericValue;
+    }
+    const option = question.options.find(opt => opt.label === String(response).trim());
+    return option ? option.value : 0;
+  };
+
   const calculateTopicScore = (topic) => {
     const topicQuestions = questions.filter(q => q.topic === topic);
     if (topicQuestions.length === 0) return { percentage: null, valid: false, complete: false };
 
     const allAnswered = topicQuestions.every(q => responses[q.id] !== undefined);
     if (!allAnswered) {
-      console.log(`Topic ${topic} not fully answered, missing:`, topicQuestions.filter(q => !responses[q.id]));
       return { percentage: null, valid: true, complete: false };
     }
 
@@ -102,66 +105,31 @@ const ResultsPage = ({ user }) => {
     const totalScore = validResponses.reduce((sum, q) => sum + getOptionValue(q, responses[q.id]), 0);
     const maxScore = validResponses.length * 2;
     const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
-    console.log(`Topic: ${topic}, All Answered: ${allAnswered}, Valid Responses: ${validResponses.length}, Total Score: ${totalScore}, Max Score: ${maxScore}, Percentage: ${percentage}%`);
     return { percentage, valid: true, complete: true };
   };
 
-  const getOptionValue = (question, response) => {
-    if (response === undefined || response === null) return 0;
-    const numericValue = parseInt(response, 10);
-    if (!isNaN(numericValue) && [0, 1, 2, -1].includes(numericValue)) {
-      console.log(`Question: ${question.text}, Response: ${response}, Mapped Value: ${numericValue} (numeric)`);
-      return numericValue;
-    }
-    const option = question.options.find(opt => opt.label === response.trim());
-    console.log(`Question: ${question.text}, Response: ${response.trim()}, Mapped Value: ${option ? option.value : 0} (label)`);
-    return option ? option.value : 0;
-  };
-
   const actionItems = questions
-  .map(q => ({ 
-    id: q.id, 
-    topic: q.topic, 
-    text: q.text, 
-    value: getOptionValue(q, responses[q.id]) 
-  }))
-  .filter(item => item.value !== null && item.value < 2);
+    .map(q => ({
+      id: q.id,
+      topic: q.topic,
+      text: q.text,
+      value: getOptionValue(q, responses[q.id]),
+    }))
+    .filter(item => item.value !== null && item.value < 2);
   const hasActionItems = actionItems.length > 0;
 
-
   const calculatePillarScore = (pillar) => {
-  const topics = topicsByPillar[pillar];
-  console.log(`\n── Calculating pillar score for: ${pillar} ──`);
-  console.log('Topics in this pillar:', topics);
+    const topics = topicsByPillar[pillar];
+    const topicScores = topics.map(topic => calculateTopicScore(topic));
+    const completedCount = topicScores.filter(s => s.complete).length;
 
-  const topicScores = topics.map(topic => {
-    const score = calculateTopicScore(topic);
-    console.log(`• Topic "${topic}" →`, score);
-    return score;
-  });
+    if (completedCount === 0) return { percentage: null, valid: false, complete: false };
+    if (completedCount < topics.length) return { percentage: null, valid: true, complete: false };
 
-  const completedCount = topicScores.filter(s => s.complete).length;
-  console.log(`Completed topics: ${completedCount} of ${topics.length}`);
-
-  if (completedCount === 0) {
-    console.log(`${pillar}: no topics answered yet.`);
-    return { percentage: null, valid: false, complete: false };
-  }
-
-  if (completedCount < topics.length) {
-    console.log(`${pillar}: in progress (only ${completedCount}/${topics.length} complete).`);
-    return { percentage: null, valid: true, complete: false };
-  }
-
-  // All topics are complete
-  const totalPerc = topicScores.reduce((sum, s) => sum + s.percentage, 0);
-  const avg = totalPerc / topicScores.length;
-  console.log(`${pillar}: all topics complete, average = ${avg.toFixed(2)}%`);
-  return { percentage: avg, valid: true, complete: true };
-};
-
-
-
+    const totalPerc = topicScores.reduce((sum, s) => sum + s.percentage, 0);
+    const avg = totalPerc / topicScores.length;
+    return { percentage: avg, valid: true, complete: true };
+  };
 
   const calculateOverallScore = () => {
     const allTopicScores = Object.values(topicsByPillar).flatMap(topics => topics.map(calculateTopicScore));
@@ -176,20 +144,26 @@ const ResultsPage = ({ user }) => {
 
   const getIconComponent = (topic) => {
     const iconMap = {
-      'accessibility' : accessibilityIcon,
-      'community engagement' : communityIcon,
-      'diversity and inclusion' : diversityIcon,
-      'energy and emissions' : energyIcon,
-      'event safety' : eventIcon,
-      'fan engagement and education' : fanIcon,
-      'transport' : transportIcon,
+      'accessibility': accessibilityIcon,
+      'community engagement': communityIcon,
+      'diversity and inclusion': diversityIcon,
+      'energy and emissions': energyIcon,
+      'event safety': eventIcon,
+      'fan engagement and education': fanIcon,
+      'transport': transportIcon,
       'waste': wasteIcon,
-      'water' : waterIcon,
-     };
+      'water': waterIcon,
+    };
     const iconPath = iconMap[topic.toLowerCase()];
-    return iconPath ? ({ style }) => (
-      <img src={iconPath} alt={`${topic} Icon`} style={{ ...style, width: '100%', height: '100%', objectFit: 'contain' }} />
-    ) : null;
+    return iconPath
+      ? ({ style }) => (
+          <img
+            src={iconPath}
+            alt={`${topic} Icon`}
+            style={{ ...style, width: '100%', height: '100%', objectFit: 'contain' }}
+          />
+        )
+      : null;
   };
 
   const overallScore = calculateOverallScore();
@@ -197,49 +171,71 @@ const ResultsPage = ({ user }) => {
   const socialScore = calculatePillarScore('Social Sustainability');
 
   return (
-    <main className="results-page">
-      <h1 className="page-heading">Your Sustainability Results</h1>
-       {hasActionItems && (
-        <div className="text-center mb-8">
-          <Link to="/action-plan">
-            <button className="btn">
-              Review Action Plan
-            </button>
-          </Link>
-        </div>
-      )}
-      <ScoreCard
-        title="Overall Sustainability"
-        percentage={overallScore.complete ? overallScore.percentage : null}
-        canvasRef={canvasRefs.overall}
-        ariaLabel="Overall Sustainability Gauge"
-        displayText={overallScore.complete ? `${Math.round(overallScore.percentage)}%` : 'In progress'}
+    <>
+      {/* Small hero band */}
+      <PageHero
+        title="Your Sustainability Results"
+        subtitle={
+          <>
+            View your overall score and per-pillar performance. You can revisit the questionnaire anytime and then refresh results.
+          </>
+        }
       />
-       <div className="pillars-container">
+
+      <main className="results-page">
+        <div className="flex justify-between items-center mb-6">
+          <button
+            onClick={() => window.print()}
+            className="btn-print"
+            aria-label="Print Results"
+            title="Print Results"
+          >
+            🖨️
+          </button>
+        </div>
+
+        {hasActionItems && (
+          <div className="text-center mb-8">
+            <Link to="/action-plan">
+              <button className="btn">Review Action Plan</button>
+            </Link>
+          </div>
+        )}
+
+        <ScoreCard
+          title="Overall Sustainability"
+          percentage={overallScore.complete ? overallScore.percentage : null}
+          canvasRef={canvasRefs.overall}
+          ariaLabel="Overall Sustainability Gauge"
+          displayText={overallScore.complete ? `${Math.round(overallScore.percentage)}%` : 'In progress'}
+        />
+
+        <div className="pillars-container">
           <TopicSection
-          pillar="Environmental Sustainability"
-          topics={topicsByPillar['Environmental Sustainability']}
-          responses={responses}
-          calculateTopicScore={calculateTopicScore}
-          getIconComponent={getIconComponent}
-          canvasRef={canvasRefs['environmental-sustainability-pillar']}
-          pillarScore={envScore}
-        />
-        <TopicSection
-          pillar="Social Sustainability"
-          topics={topicsByPillar['Social Sustainability']}
-          responses={responses}
-          calculateTopicScore={calculateTopicScore}
-          getIconComponent={getIconComponent}
-          canvasRef={canvasRefs['social-sustainability-pillar']}
-          pillarScore={socialScore}
-        />
-       </div>
-      
-      {Object.keys(responses).length === 0 && (
-        <p className="results-page__no-results">No results yet. Please complete the questionnaire.</p>
-      )}
-    </main>
+            pillar="Environmental Sustainability"
+            topics={topicsByPillar['Environmental Sustainability']}
+            responses={responses}
+            calculateTopicScore={calculateTopicScore}
+            getIconComponent={getIconComponent}
+            canvasRef={canvasRefs['environmental-sustainability-pillar']}
+            pillarScore={envScore}
+          />
+          <TopicSection
+            pillar="Social Sustainability"
+            topics={topicsByPillar['Social Sustainability']}
+            responses={responses}
+            calculateTopicScore={calculateTopicScore}
+            getIconComponent={getIconComponent}
+            canvasRef={canvasRefs['social-sustainability-pillar']}
+            pillarScore={socialScore}
+          />
+        </div>
+
+        {Object.keys(responses).length === 0 && (
+          <p className="results-page__no-results">No results yet. Please complete the questionnaire.</p>
+        )}
+      </main>
+    </>
   );
 };
 

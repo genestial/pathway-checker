@@ -16,7 +16,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const analytics = getAnalytics(app);
+let analytics;
+if (typeof window !== 'undefined' && 'measurementId' in firebaseConfig) {
+  try { analytics = getAnalytics(app); } catch {}
+}
+export { analytics };
 
 
 

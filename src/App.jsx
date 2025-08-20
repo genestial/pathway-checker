@@ -1,32 +1,48 @@
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+// src/App.jsx
+import { BrowserRouter, HashRouter, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
+import Footer from './components/Footer';
+
 import HomePage from './pages/HomePage';
 import QuestionnairePage from './pages/QuestionnairePage';
-// ⬇️ Import the boundary alongside the default export
 import ResultsPage, { ErrorBoundary } from './pages/ResultsPage';
-import AboutPage from './pages/AboutPage';
 import ActionPlanPage from './pages/ActionPlanPage';
 import Auth from './components/Auth';
+
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import './styles/main.css';
+
+/** Choose router by env */
+const useHash = import.meta.env.VITE_ROUTER === 'hash';
+const RouterImpl = useHash ? HashRouter : BrowserRouter;
+
+/** Normalize basename for BrowserRouter only */
+function getBasename() {
+  let raw = import.meta.env.BASE_URL || '/';
+  // Guard against "./" or "." producing "/./"
+  if (raw === './' || raw === '.') return '';
+  // Remove trailing slash(es)
+  raw = raw.replace(/\/+$/, '');
+  // Ensure leading slash if not empty
+  if (raw && !raw.startsWith('/')) raw = `/${raw}`;
+  return raw; // e.g. "/clients/aspon/pathwaychecker"
+}
 
 function AppContent() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   const handleAuthChange = useCallback((u) => {
-    console.log('handleAuthChange triggered with user:', u);
     setUser(u);
   }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      console.log('Auth state changed:', u);
       handleAuthChange(u);
-      if (u && window.location.pathname === '/auth') {
-        console.log('Attempting to navigate to / after login');
+      // If user logs in while on /auth, send them to the app root (relative to basename)
+      if (u && window.location.pathname.endsWith('/auth')) {
         navigate('/', { replace: true });
       }
     });
@@ -34,8 +50,7 @@ function AppContent() {
   }, [navigate, handleAuthChange]);
 
   const ProtectedRoute = ({ children }) => {
-    console.log('ProtectedRoute user for path:', window.location.pathname, 'user:', user);
-    if (!user && window.location.pathname !== '/auth') {
+    if (!user && !window.location.pathname.endsWith('/auth')) {
       return <Navigate to="/auth" replace />;
     }
     return children;
@@ -71,14 +86,6 @@ function AppContent() {
         }
       />
       <Route
-        path="/about"
-        element={
-          <ProtectedRoute>
-            <AboutPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/action-plan"
         element={
           <ProtectedRoute>
@@ -86,16 +93,19 @@ function AppContent() {
           </ProtectedRoute>
         }
       />
-
     </Routes>
   );
 }
 
 export default function App() {
+  const basename = useHash ? undefined : getBasename();
   return (
-    <Router>
+    <RouterImpl {...(!useHash && basename !== undefined ? { basename } : {})}>
       <Header />
-      <AppContent />
-    </Router>
+      <main className="page">
+        <AppContent />
+      </main>
+      <Footer />
+    </RouterImpl>
   );
 }

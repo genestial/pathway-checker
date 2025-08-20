@@ -34,25 +34,24 @@ const ScoreCard = ({ title, percentage, canvasRef, ariaLabel, displayText }) => 
     ctx.fillStyle = (getComputedStyle(document.documentElement).getPropertyValue(`--${colorClass}`).trim() || '#000') + '80';
     ctx.fill();
 
-    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue(`--${colorClass}`).trim() || '#000';
-    ctx.font = percentage !== null ? '16px Montserrat' : '12px Montserrat';
-    ctx.textAlign = 'center';
-    ctx.fillText(displayText || '', centerX, centerY + 5);
   }, [percentage, displayText]);
 
   return (
-    <article className="score-card">
+    <article className="score-card relative">
       <h2 className="score-card__title">{title}</h2>
-      <canvas ref={canvasRef} width="200" height="200" className="score-card__canvas" aria-label={ariaLabel} />
-      <p className="score-card__value">
-        <span className={percentage === null ? 'in-progress' : 
-          percentage >= 85 ? 'leading' : 
-          percentage >= 65 ? 'advancing' : 
-          percentage >= 40 ? 'developing' : 'needs-improvement'}>
-          {displayText}
-        </span>
-      </p>
-      <p className="score-card__label">Overall Sustainability Score</p>
+      <div className="relative">
+        <canvas
+          ref={canvasRef}
+          width="200" height="200"
+          className="score-card__canvas"
+          aria-label={ariaLabel}
+        />
+        {displayText != null && (
+          <div className="score-card__overlay">
+            {displayText}
+          </div>
+        )}
+      </div>
     </article>
   );
 };

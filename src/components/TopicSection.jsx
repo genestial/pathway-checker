@@ -41,7 +41,7 @@ const TopicSection = ({ pillar, topics, responses, calculateTopicScore, getIconC
     ctx.font = score.current.percentage !== null ? '16px Montserrat' : '12px Montserrat';
     ctx.textAlign = 'center';
     ctx.fillText(score.current.percentage !== null ? `${Math.round(score.current.percentage)}%` : 'In progress', centerX, centerY + 5);
-  }, [canvasRef, score.current && score.current.percentage]);
+  }, [canvasRef, pillarScore?.percentage]);
 
  // const pillarScore = calculatePillarScore(pillar, topics, calculateTopicScore);
   score.current = pillarScore;
