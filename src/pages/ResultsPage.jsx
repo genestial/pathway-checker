@@ -114,9 +114,8 @@ const ResultsPage = ({ user }) => {
       topic: q.topic,
       text: q.text,
       value: getOptionValue(q, responses[q.id]),
-    }))
-    .filter(item => item.value !== null && item.value < 2);
-  const hasActionItems = actionItems.length > 0;
+    }));
+  const hasActionItems = actionItems.some(i => i.value === 0 || i.value === 1);
 
   const calculatePillarScore = (pillar) => {
     const topics = topicsByPillar[pillar];
