@@ -1,4 +1,3 @@
-// src/App.jsx
 import { BrowserRouter, HashRouter, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
@@ -41,8 +40,8 @@ function AppContent() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       handleAuthChange(u);
-      // If user logs in while on /auth, send them to the app root (relative to basename)
-      if (u && window.location.pathname.endsWith('/auth')) {
+      // If user logs in while on /login, send them to the app root (relative to basename)
+      if (u && window.location.pathname.endsWith('/login')) {
         navigate('/', { replace: true });
       }
     });
@@ -50,23 +49,16 @@ function AppContent() {
   }, [navigate, handleAuthChange]);
 
   const ProtectedRoute = ({ children }) => {
-    if (!user && !window.location.pathname.endsWith('/auth')) {
-      return <Navigate to="/auth" replace />;
+    if (!user && !window.location.pathname.endsWith('/login') && window.location.pathname !== '/') {
+      return <Navigate to="/login" replace />;
     }
     return children;
   };
 
   return (
     <Routes>
-      <Route path="/auth" element={<Auth onAuthChange={handleAuthChange} />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <HomePage />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/login" element={<Auth onAuthChange={handleAuthChange} />} />
+      <Route path="/" element={<HomePage />} />
       <Route
         path="/questionnaire"
         element={

@@ -22,10 +22,9 @@ const HomePage = () => {
         <div className="home-hero__overlay" />
         <div className="container">
           <div className="home-hero__content">
-            <h1 className="page-heading">PATHWAY Sustainability Checker</h1>
+            <h1 className="page-heading">Welcome to the PATHWAY Sustainability Checker</h1>
             <p className="home-hero__lead">
-              Assess your organisation’s sustainability practices across key topics and pillars.
-              See your stage and generate a tailored action plan to improve.
+             Helping football clubs and organisations become more sustainable, one step at a time.
             </p>
             <Link to="/questionnaire" className="btn" aria-label="Start Questionnaire">
               Get Started
@@ -45,15 +44,36 @@ const HomePage = () => {
             />
           </div>
           <div className="home-section__body">
-            <h2 className="section-heading">The Sustainability Checker</h2>
+            <h2 className="section-heading">About the Tool</h2>
             <p>
-              The checker evaluates how your practices align with sustainability goals across multiple
-              topics. It excludes “N/A” answers from scoring, highlights gaps, and builds an Action Plan
-              with practical steps to move from Developing to Leading.
+              The PATHWAY Sustainability Checker is an online self-assessment tool designed to help football organisations evaluate and improve their environmental and social sustainability practices and overall sustainability performance.
+            </p>
+            <p>
+              Through a structured set of practical questions, it helps you understand where your organisation currently stands, while offering targeted guidance on how to improve.
             </p>
             <Link to="/questionnaire" className="btn" aria-label="Start Questionnaire">
               Start now
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Why use*/}
+      <section className="home-section home-section--green">
+        <div className="home-section__inner">
+          <div className="home-section__media home-section__media--center">
+            <img src={pathwayLogo} alt="PATHWAY project logo" className="home-section__logo" />
+          </div>
+          <div className="home-section__body">
+            <h2 className="section-heading">Why use this Tool?</h2>
+            <ul>
+              <li>Identify strengths and gaps in your current practices</li>  
+              <li>Get tailored improvement suggestions</li>
+              <li>Build a clear and actionable improvement plan</li>
+              <li>Track your progress over time</li>
+              <li>Align with good practices promoted across Europe and UEFA</li>
+            </ul>
+           
           </div>
         </div>
       </section>
