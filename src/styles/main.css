@@ -48,6 +48,7 @@ nav ul li, ul.footer__social-list li{ list-style: none; }
 .header__container { @apply flex items-center justify-between px-4 max-w-7xl mx-auto; height: var(--header-h); }
 .header__logo { @apply h-10 md:h-11; }
 .header__nav-list { @apply flex items-center space-x-4 ml-auto mr-4; }
+.header__nav { list-style: none; }
 .header__nav-link { @apply text-black hover:text-pathway-dark transition text-base font-medium; }
 .header__nav-link.active::before {
   content: '';
@@ -253,6 +254,16 @@ ul {
   box-shadow: inset 4px 0 0 theme('colors.emerald.500');
 }
 
+.actionplan-topic img{
+  @apply mr-2;
+}
+
+.recommendation-count{
+   @apply text-sm font-['Manrope'] font-normal pl-2;
+}
+.questionnaire-gate .container{
+  @apply pt-8;
+}
 /* Responsive */
 @media (max-width: 640px) {
   .home-page, .results-page, .auth-container { @apply pt-16; }

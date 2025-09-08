@@ -8,6 +8,8 @@ import QuestionnairePage from './pages/QuestionnairePage';
 import ResultsPage, { ErrorBoundary } from './pages/ResultsPage';
 import ActionPlanPage from './pages/ActionPlanPage';
 import Auth from './components/Auth';
+import QuestionnaireGate from './pages/QuestionnaireGate';
+import MyAssessmentsPage from './pages/MyAssessmentsPage';
 
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -59,32 +61,52 @@ function AppContent() {
     <Routes>
       <Route path="/login" element={<Auth onAuthChange={handleAuthChange} />} />
       <Route path="/" element={<HomePage />} />
-      <Route
-        path="/questionnaire"
-        element={
-          <ProtectedRoute>
-            <QuestionnairePage user={user} />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/results"
-        element={
-          <ProtectedRoute>
-            <ErrorBoundary>
-              <ResultsPage user={user} />
-            </ErrorBoundary>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/action-plan"
-        element={
-          <ProtectedRoute>
-            <ActionPlanPage user={user} />
-          </ProtectedRoute>
-        }
-      />
+      {/* Gate that decides resume/edit/new */}
+<Route
+  path="/questionnaire"
+  element={
+    <ProtectedRoute>
+      <QuestionnaireGate />
+    </ProtectedRoute>
+  }
+/>
+
+{/* Canonical param routes */}
+<Route
+  path="/questionnaire/:assessmentId"
+  element={
+    <ProtectedRoute>
+      <QuestionnairePage />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/results/:assessmentId"
+  element={
+    <ProtectedRoute>
+      <ResultsPage />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/action-plan/:assessmentId"
+  element={
+    <ProtectedRoute>
+      <ActionPlanPage />
+    </ProtectedRoute>
+  }
+/>
+
+{/* Assessments log */}
+<Route
+  path="/assessments"
+  element={
+    <ProtectedRoute>
+      <MyAssessmentsPage />
+    </ProtectedRoute>
+  }
+/>
+
     </Routes>
   );
 }

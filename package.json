@@ -3,15 +3,15 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
- "scripts": {
-  "dev": "vite",
-  "dev:demo": "vite --mode demo",
-  "build": "vite build",
-  "build:demo": "vite build --mode demo",
-  "lint": "eslint .",
-  "preview": "vite preview",
-  "preview:demo": "vite preview --mode demo"
-},
+  "scripts": {
+    "dev": "vite",
+    "dev:demo": "vite --mode demo",
+    "build": "vite build",
+    "build:demo": "vite build --mode demo",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "preview:demo": "vite preview --mode demo"
+  },
   "dependencies": {
     "@firebase/analytics": "^0.10.16",
     "chart.js": "^4.4.9",
@@ -23,6 +23,7 @@
     "react-router-dom": "^7.7.0",
     "react-tabs": "^6.1.0",
     "react-tooltip": "^5.29.1",
+    "recharts": "^3.1.2",
     "tippy.js": "^6.3.7"
   },
   "devDependencies": {

@@ -59,7 +59,7 @@ const HomePage = () => {
       </section>
 
       {/* Why use*/}
-      <section className="home-section home-section--green">
+      <section className="home-section home-section--white">
         <div className="home-section__inner">
           <div className="home-section__media home-section__media--center">
             <img src={pathwayLogo} alt="PATHWAY project logo" className="home-section__logo" />
