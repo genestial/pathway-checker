@@ -1,14 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-// ❌ remove: import { asset } from "../utils/asset";
 import pathwayLogo from "../assets/pathway-logo.svg"; // stays bundled by Vite
 
 const partners = [
-  { name: "Partner A", href: "https://example.com", logo: `${import.meta.env.BASE_URL}assets/partners/cfa.png` },
-  { name: "Partner B", href: "https://example.com", logo: `${import.meta.env.BASE_URL}assets/partners/panserraikos.png` },
-  { name: "Partner C", href: "https://example.com", logo: `${import.meta.env.BASE_URL}assets/partners/anorthosis_FC.png` },
-  { name: "Partner D", href: "https://example.com", logo: `${import.meta.env.BASE_URL}assets/partners/OFC_Akademik_Svishtov.png` },
-  { name: "Partner E", href: "https://example.com", logo: `${import.meta.env.BASE_URL}assets/partners/efip.png` },
+  { name: 'Cyprus Football Association', country: 'Cyprus - Project Coordinator', href: 'https://www.cfa.com.cy/', logo: `${import.meta.env.BASE_URL}assets/partners/cfa.png` },
+  { name: 'Anorthosis Famagusta FC', country: 'Cyprus', href: 'https://anorthosisfc.com.cy/', logo: `${import.meta.env.BASE_URL}assets/partners/anorthosis_FC.png` },
+  { name: 'M.G.S. Panserraikos PAE 1946', country: 'Greece', href: 'https://panserraikosfc.gr/', logo: `${import.meta.env.BASE_URL}assets/partners/panserraikos.png` },
+  { name: 'Foul Training', country: 'Greece', href: 'https://akademik.bg/', logo: `${import.meta.env.BASE_URL}assets/partners/efip.png` },
+  { name: 'Municipal Football Club Academic Svishtov', country: 'Bulgaria', href: 'https://www.foultraining.gr/', logo: `${import.meta.env.BASE_URL}assets/partners/OFC_Akademik_Svishtov.png` },
 ];
 
 const HomePage = () => {
@@ -34,90 +33,77 @@ const HomePage = () => {
       </section>
 
       {/* The Sustainability Checker */}
-      <section className="home-section home-section--light">
-        <div className="home-section__inner">
-          <div className="home-section__media">
+      <section className="page-section page-section--light">
+        <div className="page-section__inner">
+          <div className="page-section__media col-3">
             <img
               src={`${import.meta.env.BASE_URL}assets/checker-graphic.svg`}
               alt=""
-              className="home-section__img"
+              className="page-section__img"
             />
           </div>
-          <div className="home-section__body">
+          <div className="page-section__body col-9">
             <h2 className="section-heading">About the Tool</h2>
             <p>
               The PATHWAY Sustainability Checker is an online self-assessment tool designed to help football organisations evaluate and improve their environmental and social sustainability practices and overall sustainability performance.
             </p>
-            <p>
-              Through a structured set of practical questions, it helps you understand where your organisation currently stands, while offering targeted guidance on how to improve.
-            </p>
-            <Link to="/questionnaire" className="btn" aria-label="Start Questionnaire">
+            <h3 className="mt-4">How it works</h3>
+            <ol className="mb-4">
+              <li>1. Answer practical questions across key topics</li>
+              <li>2. View your performance score on each topic</li>
+              <li>3. Receive Action plan with suggestions</li>
+            </ol>
+            
+            <Link to="/questionnaire" className="btn mr-4" aria-label="Start Checker">
               Start now
             </Link>
-          </div>
-        </div>
-      </section>
 
-      {/* Why use*/}
-      <section className="home-section home-section--white">
-        <div className="home-section__inner">
-          <div className="home-section__media home-section__media--center">
-            <img src={pathwayLogo} alt="PATHWAY project logo" className="home-section__logo" />
-          </div>
-          <div className="home-section__body">
-            <h2 className="section-heading">Why use this Tool?</h2>
-            <ul>
-              <li>Identify strengths and gaps in your current practices</li>  
-              <li>Get tailored improvement suggestions</li>
-              <li>Build a clear and actionable improvement plan</li>
-              <li>Track your progress over time</li>
-              <li>Align with good practices promoted across Europe and UEFA</li>
-            </ul>
-           
-          </div>
-        </div>
-      </section>
-
-      {/* About the project */}
-      <section className="home-section home-section--green">
-        <div className="home-section__inner">
-          <div className="home-section__media home-section__media--center">
-            <img src={pathwayLogo} alt="PATHWAY project logo" className="home-section__logo" />
-          </div>
-          <div className="home-section__body">
-            <h2 className="section-heading">About the project</h2>
-            <p>
-              PATHWAY supports organisations with practical tools to measure, understand, and improve
-              sustainability performance. Explore the approach, methodology, and resources available to your team.
-            </p>
-            <Link to="/about" className="btn" aria-label="Learn more about the project">
-              Learn more
+            <Link to="/tool" className="btn btn-secondary" aria-label="Find out more">
+              Find out more
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* The project*/}
+      <section className="page-section page-section--green">
+        <div className="page-section__inner flex items-center">
+          <div className="page-section__body col-9">
+            <h2 className="section-heading">The Project</h2>
+            <p>The PATHWAY project (Paving pATHs toWards footbAll’s sustainabilitY), co-funded by the European Union, promotes environmentally and socially sustainable practices in football. It brings together clubs, federations, and stakeholders from across Europe to develop, pilot, and share practical approaches that support sustainability at all levels of the game, from grassroots to professional.</p>
+            <Link to="/about" className="btn mt-4" aria-label="Find out more">
+              Find out more
+            </Link>
+            
+          </div>
+          <div className="page-section__media col-3">
+            <img src={pathwayLogo} alt="PATHWAY project logo" className="page-section__logo" />
           </div>
         </div>
       </section>
 
       {/* Partners */}
-      <section className="home-section home-section--partners home-section--white">
-        <div className="home-section__inner">
-          <div className="home-section__body">
+      <section className="page-section page-section--partners page-section--white">
+        <div className="page-section__inner">
+          <div className="page-section__body">
             <h2 className="section-heading">Partners</h2>
             <ul className="partners">
-              {partners.map((p) => (
-                <li key={p.name} className="partners__item">
-                  <a
-                    href={p.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={p.name}
-                    className="partners__link"
-                    title={p.name}
-                  >
-                    <img src={p.logo} alt={p.name} className="partners__logo" />
-                  </a>
-                </li>
-              ))}
-            </ul>
+                {partners.map((p) => (
+                  <li key={p.name} className="partners__item">
+                    <a
+                      href={p.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={p.name}
+                      className="partners__link"
+                      title={`${p.name} (${p.country})`}
+                    >
+                      <img src={p.logo} alt={p.name} className="partners__logo" />
+                      <span className="partners__name">{p.name}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
           </div>
         </div>
       </section>

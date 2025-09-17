@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import pathwayLogo from "../assets/pathway-logo.svg";
 
@@ -7,8 +7,11 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [aboutDropdown, setAboutDropdown] = useState(false);
   const navigate = useNavigate();
   const auth = getAuth();
+  const location = useLocation();
+  const isAboutActive = location.pathname === '/about' || location.pathname === '/tool';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -44,20 +47,43 @@ const Header = () => {
             className="header__logo"
           />
         </Link>
-
         <nav className="header__nav" aria-label="Main navigation">
           <ul className="header__nav-list">
             <li className="header__nav-item">
               <NavLink to="/" className="header__nav-link">Home</NavLink>
             </li>
             <li className="header__nav-item">
-              <NavLink to="/questionnaire" className="header__nav-link">Questionnaire</NavLink>
+              <NavLink to="/questionnaire" className="header__nav-link">Sustainability Checker</NavLink>
+            </li>
+            <li className="header__nav-item relative">
+              <button
+                onClick={() => setAboutDropdown(!aboutDropdown)}
+                className={`header__nav-link ${isAboutActive ? 'active' : ''}`}
+                aria-label="About menu"
+              >
+                About
+              </button>
+              {aboutDropdown && (
+                <div className="header__dropdown header__dropdown--left">
+                  <Link
+                    to="/about"
+                    className="header__dropdown-item"
+                    onClick={() => setAboutDropdown(false)}
+                  >
+                    The Project
+                  </Link>
+                  <Link
+                    to="/tool"
+                    className="header__dropdown-item"
+                    onClick={() => setAboutDropdown(false)}
+                  >
+                    The Tool
+                  </Link>
+                </div>
+              )}
             </li>
             <li className="header__nav-item">
-              <NavLink to="/results" className="header__nav-link">Results</NavLink>
-            </li>
-            <li className="header__nav-item">
-              <NavLink to="/action-plan" className="header__nav-link">Action Plan</NavLink>
+              <Link to="/toolkit" className="header__nav-link">The Toolkit</Link>
             </li>
             <li className="header__nav-item relative">
               {user ? (
@@ -75,9 +101,20 @@ const Header = () => {
                   </button>
                   {showDropdown && (
                     <div className="header__dropdown">
-                      <span className="header__dropdown-email">
-                        {user.email}
-                      </span>
+                      <Link
+                        to="/assessments"
+                        className="header__dropdown-item"
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        My Assessments
+                      </Link>
+                      <Link
+                        to="/account"
+                        className="header__dropdown-item"
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        My Account
+                      </Link>
                       <button
                         onClick={handleLogout}
                         className="header__dropdown-btn"

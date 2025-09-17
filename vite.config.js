@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');      // ← loads .env.demo
-  const base = env.VITE_APP_BASE_URL || '/';
+  const base = '/clients/aspon/pathwaychecker_v2/';
   return {
     base,
     plugins: [react()],

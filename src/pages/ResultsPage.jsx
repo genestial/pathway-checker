@@ -4,7 +4,6 @@ import { db, auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import ScoreCard from '../components/ScoreCard';
-import TopicSection from '../components/TopicSection';
 import PageHero from '../components/PageHero';
 import questions from '../data/questions';
 
@@ -49,6 +48,7 @@ const ResultsPage = ({ user }) => {
 
   const [authedUser, setAuthedUser] = useState(user || null); // support prop OR auth
   const [responses, setResponses] = useState({});
+  const [assessmentTitle, setAssessmentTitle] = useState('');
   const canvasRefs = {
     overall: useRef(null),
     'environmental-sustainability-pillar': useRef(null),
@@ -70,17 +70,20 @@ const ResultsPage = ({ user }) => {
         const docRef = doc(db, 'users', authedUser.uid, 'assessments', assessmentId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          const data = docSnap.data().responses || {};
-          setResponses(data);
+          const data = docSnap.data();
+          setResponses(data.responses || {});
+          setAssessmentTitle(data.title || '');
         } else {
           setResponses({});
+          setAssessmentTitle('');
         }
         const unsubscribe = onSnapshot(
           docRef,
           (snap) => {
             if (snap.exists()) {
-              const data = snap.data().responses || {};
-              setResponses(data);
+              const data = snap.data();
+              setResponses(data.responses || {});
+              setAssessmentTitle(data.title || '');
             }
           },
           (error) => {
@@ -148,271 +151,275 @@ const ResultsPage = ({ user }) => {
     if (validTopics.length === 0) return { percentage: null, valid: false, complete: false };
     if (completeTopics.length < allTopicScores.length) return { percentage: null, valid: true, complete: false };
 
-    const totalPercentage = validTopics.reduce((sum, score) => sum + score.percentage, 0) / validTopics.length;
-    return { percentage: totalPercentage, valid: true, complete: true };
+    const totalPercentage = validTopics.reduce((sum, score) => sum + score.percentage, 0);
+    const averagePercentage = totalPercentage / validTopics.length;
+    return { percentage: averagePercentage, valid: true, complete: true };
   };
 
-  // Pillar-level icons (one per pillar)
-  const pillarIconFor = (pillar) => {
-    if (pillar === 'Environmental Sustainability') return energyIcon;
-    if (pillar === 'Social Sustainability') return diversityIcon;
-    return null;
+  const getColorClass = (percentage) => {
+    if (percentage >= 75) return 'text-leading';
+    if (percentage >= 50) return 'text-advancing';
+    if (percentage >= 25) return 'text-developing';
+    return 'text-needs-improvement';
   };
 
-  // ===========================================================
-  // ===============  ACTION PLAN (exact format)  ==============
-  // ===========================================================
-  // This block is your original ActionPlan (UI + logic), adapted to:
-  //  - use this page's `responses`
-  //  - show count next to each topic title
-  //  - NOT fetch/subscribe again (we already did above)
+  const overallScore = useMemo(() => calculateOverallScore(), [responses]);
+  const envScore = useMemo(() => calculatePillarScore('Environmental Sustainability'), [responses]);
+  const socialScore = useMemo(() => calculatePillarScore('Social Sustainability'), [responses]);
 
-  const iconMap = {
-    'accessibility': accessibilityIcon,
-    'community engagement': communityIcon,
-    'diversity and inclusion': diversityTopicIcon,
-    'energy and emissions': energyTopicIcon,
-    'event safety': eventIcon,
-    'fan engagement and education': fanIcon,
-    'transport': transportIcon,
-    'waste': wasteIcon,
-    'water': waterIcon,
-  };
-
-  // Map response to numeric value (unchanged from your original)
-  const apGetOptionValue = (question, response) => {
-    if (response == null) return null;
-    const num = parseInt(response, 10);
-    if (!isNaN(num) && [0, 1, 2].includes(num)) return num;
-    const option = question.options.find(o => o.label === response);
-    return option ? option.value : null;
-  };
-
-  // Build actionable items (score 0 or 1) — unchanged filter logic
-  const actionItems = useMemo(() => {
-    return questions
-      .map(q => {
-        const val = apGetOptionValue(q, responses[q.id]);
-        return { ...q, value: val };
-      })
-      .filter(item => item.value !== null && item.value < 2);
+  // Action Plan items (kept as-is)
+  const itemsByTopic = useMemo(() => {
+    const byTopic = {};
+    questions.forEach(q => {
+      const resp = responses[q.id];
+      if (resp == null) return;
+      const value = getOptionValue(q, resp);
+      if (value < 2 && q.recommendation) {
+        if (!byTopic[q.topic]) byTopic[q.topic] = [];
+        byTopic[q.topic].push({ ...q, value });
+      }
+    });
+    return byTopic;
   }, [responses]);
 
-  // Group by topic
-  const itemsByTopic = useMemo(() => {
-    return actionItems.reduce((acc, item) => {
-      (acc[item.topic] = acc[item.topic] || []).push(item);
-      return acc;
-    }, {});
-  }, [actionItems]);
+  const topics = useMemo(() => Object.keys(itemsByTopic).sort(), [itemsByTopic]);
 
-  const topics = useMemo(() => Object.keys(itemsByTopic), [itemsByTopic]);
+  const iconMap = {
+    accessibility: accessibilityIcon,
+    waste: wasteIcon,
+    transport: transportIcon,
+    energy: energyTopicIcon,
+    'energy and emissions': energyTopicIcon,
+    'community engagement': communityIcon,
+    'diversity and inclusion': diversityTopicIcon,
+    'event safety': eventIcon,
+    'fan engagement and education': fanIcon,
+    water: waterIcon,
+  };
 
-  // Accordion state: by default, open all topics that have items (exactly like your original)
-  const [openTopics, setOpenTopics] = useState(() => new Set(topics));
-  useEffect(() => {
-    setOpenTopics(new Set());
+  const pillarIconFor = (pillar) =>
+    pillar === 'Environmental Sustainability' ? energyIcon : diversityIcon;
 
-  }, [topics]);
+  const [openTopics, setOpenTopics] = useState(new Set(topics));
 
   const toggleTopic = (topic) => {
-    setOpenTopics(prev => {
-      const next = new Set(prev);
-      if (next.has(topic)) next.delete(topic);
-      else next.add(topic);
-      return next;
-    });
+    const newSet = new Set(openTopics);
+    if (newSet.has(topic)) newSet.delete(topic);
+    else newSet.add(topic);
+    setOpenTopics(newSet);
   };
 
   const expandAll = () => setOpenTopics(new Set(topics));
   const collapseAll = () => setOpenTopics(new Set());
 
-  // ===========================================================
-
-  const overallScore = calculateOverallScore();
-  const envScore = calculatePillarScore('Environmental Sustainability');
-  const socialScore = calculatePillarScore('Social Sustainability');
-
-  // Hide subtopic icons inside TopicSection to keep pillar sections compact
-  const noTopicIcons = () => null;
+  if (Object.keys(responses).length === 0) {
+    return (
+      <p className="results-page__no-results">No results yet. Please complete the questionnaire.</p>
+    );
+  }
 
   return (
     <>
-      {/* Small hero band */}
       <PageHero
         title="Your Sustainability Results"
-        subtitle={
-          <>
-            View your overall score and per-pillar performance. You can revisit the questionnaire anytime and then refresh results.
-          </>
-        }
+        subtitle="Review your scores and action plan below."
       />
-
       <main className="results-page">
-        {/* Print button for the whole Results page */}
-        <div className="flex justify-between items-center mb-6">
-          <button
-            onClick={() => window.print()}
-            className="btn-print"
-            aria-label="Print Results"
-            title="Print Results"
-          >
-            🖨️
-          </button>
-        </div>
+        <section className="page-section page-section--white">
+          <div className="page-section__inner container">
+            <div className="page-section__body col-12">
+              <h2 className="text-center mb-4 text-xl font-bold">{assessmentTitle || 'Untitled Assessment'}</h2>
+              {/* Overall gauge */}
+              <div className="text-center mb-8">
+                <ScoreCard
+                  canvasRef={canvasRefs.overall}
+                  percentage={overallScore.percentage}
+                  complete={overallScore.complete}
+                  title="Overall Sustainability"
+                  ariaLabel="Overall Sustainability Gauge"
+                  displayText={overallScore.complete ? `${Math.round(overallScore.percentage)}%` : 'In progress'}
+                />
+              </div>
 
-        {/* Overall */}
-        <ScoreCard
-          title="Overall Sustainability"
-          percentage={overallScore.complete ? overallScore.percentage : null}
-          canvasRef={canvasRefs.overall}
-          ariaLabel="Overall Sustainability Gauge"
-          displayText={overallScore.complete ? `${Math.round(overallScore.percentage)}%` : 'In progress'}
-        />
+              {/* Pillars in 2-column layout */}
+              <div className="pillars-container">
+                {/* Environmental pillar */}
+                <div className="pillar-block text-center">
+                  <div className="pillar-header flex justify-center items-center gap-3 mb-4">
+                    <img
+                      src={pillarIconFor('Environmental Sustainability')}
+                      alt="Environmental pillar icon"
+                      className="w-10 h-10 object-contain"
+                    />
+                    <h2 className="a11y-heading text-2xl font-bold">Environmental Sustainability</h2>
+                  </div>
+                  <div className="mx-auto w-fit mb-4">
+                    <ScoreCard
+                      canvasRef={canvasRefs['environmental-sustainability-pillar']}
+                      percentage={envScore.percentage}
+                      complete={envScore.complete}
+                      ariaLabel="Environmental Sustainability Gauge"
+                      displayText={envScore.complete ? `${Math.round(envScore.percentage)}%` : 'In progress'}
+                      className="score-card--small"
+                    />
+                  </div>
+                  <table className="topic-stats mx-auto w-3/4 border-collapse">
+                    <tbody>
+                      {topicsByPillar['Environmental Sustainability'].map(topic => {
+                        const score = calculateTopicScore(topic);
+                        const colorClass = score.complete ? getColorClass(score.percentage) : 'text-in-progress';
+                        return (
+                          <tr key={topic} className="border-b border-gray-200">
+                            <td className="py-2 text-left">{topic}</td>
+                            <td className={`py-2 text-right font-bold ${colorClass}`}>
+                              {score.complete ? `${Math.round(score.percentage)}%` : 'In progress'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
 
-        {/* Environmental pillar (single icon) */}
-        <div className="pillar-block">
-          <div className="pillar-header" style={{ display:'flex', alignItems:'center', gap:12, marginTop: 12 }}>
-            <img
-              src={pillarIconFor('Environmental Sustainability')}
-              alt="Environmental pillar icon"
-              style={{ width: 40, height: 40, objectFit:'contain' }}
-            />
-            <h2 className="a11y-heading">Environmental Sustainability</h2>
-          </div>
-          <TopicSection
-            pillar="Environmental Sustainability"
-            topics={topicsByPillar['Environmental Sustainability']}
-            responses={responses}
-            calculateTopicScore={calculateTopicScore}
-            getIconComponent={noTopicIcons}
-            canvasRef={canvasRefs['environmental-sustainability-pillar']}
-            pillarScore={envScore}
-          />
-        </div>
-
-        {/* Social pillar (single icon) */}
-        <div className="pillar-block">
-          <div className="pillar-header" style={{ display:'flex', alignItems:'center', gap:12, marginTop: 16 }}>
-            <img
-              src={pillarIconFor('Social Sustainability')}
-              alt="Social pillar icon"
-              style={{ width: 40, height: 40, objectFit:'contain' }}
-            />
-            <h2 className="a11y-heading">Social Sustainability</h2>
-          </div>
-          <TopicSection
-            pillar="Social Sustainability"
-            topics={topicsByPillar['Social Sustainability']}
-            responses={responses}
-            calculateTopicScore={calculateTopicScore}
-            getIconComponent={noTopicIcons}
-            canvasRef={canvasRefs['social-sustainability-pillar']}
-            pillarScore={socialScore}
-          />
-        </div>
-
-        {/* ======================= FULL ACTION PLAN ======================= */}
-        <section className="action-plan-page container" style={{ marginTop: 16 }}>
-          {/* (kept from your original ActionPlan header) */}
-          <div className="flex justify-between items-center mb-6">
-            {topics.length > 0 && (
-              <div className="flex items-center mb-6">
-                <div className="ml-auto flex gap-3">
-                  <button
-                    onClick={expandAll}
-                    className="btn"
-                    aria-label="Expand all sections"
-                    title="Expand all"
-                  >
-                    Expand all
-                  </button>
-                  <button
-                    onClick={collapseAll}
-                    className="btn"
-                    aria-label="Collapse all sections"
-                    title="Collapse all"
-                  >
-                    Collapse all
-                  </button>
-                  <button
-                    onClick={() => window.print()}
-                    className="btn-print"
-                    aria-label="Print Action Plan"
-                    title="Print"
-                  >
-                    🖨️
-                  </button>
+                {/* Social pillar */}
+                <div className="pillar-block text-center">
+                  <div className="pillar-header flex justify-center items-center gap-3 mb-4">
+                    <img
+                      src={pillarIconFor('Social Sustainability')}
+                      alt="Social pillar icon"
+                      className="w-10 h-10 object-contain"
+                    />
+                    <h2 className="a11y-heading text-2xl font-bold">Social Sustainability</h2>
+                  </div>
+                  <div className="mx-auto w-fit mb-4">
+                    <ScoreCard
+                      canvasRef={canvasRefs['social-sustainability-pillar']}
+                      percentage={socialScore.percentage}
+                      complete={socialScore.complete}
+                      ariaLabel="Social Sustainability Gauge"
+                      displayText={socialScore.complete ? `${Math.round(socialScore.percentage)}%` : 'In progress'}
+                      className="score-card--small"
+                    />
+                  </div>
+                  <table className="topic-stats mx-auto w-3/4 border-collapse">
+                    <tbody>
+                      {topicsByPillar['Social Sustainability'].map(topic => {
+                        const score = calculateTopicScore(topic);
+                        const colorClass = score.complete ? getColorClass(score.percentage) : 'text-in-progress';
+                        return (
+                          <tr key={topic} className="border-b border-gray-200">
+                            <td className="py-2 text-left">{topic}</td>
+                            <td className={`py-2 text-right font-bold ${colorClass}`}>
+                              {score.complete ? `${Math.round(score.percentage)}%` : 'In progress'}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            )}
-          </div>
 
-          {topics.length === 0 && (
-            <p className="mt-4 text-lg">🎉 All set! No action items at this time.</p>
-          )}
-
-          {topics.map((topic) => {
-            const items = itemsByTopic[topic];
-            const iconSrc = iconMap[topic.toLowerCase()] || defaultIcon;
-            const isOpen = openTopics.has(topic);
-            const panelId = `accordion-panel-${topic.replace(/\s+/g, '-').toLowerCase()}`;
-            const btnId = `accordion-button-${topic.replace(/\s+/g, '-').toLowerCase()}`;
-            const count = items.length; // <-- added count
-
-            return (
-              <section key={topic} className="mb-8">
-                {/* Accordion header button for accessibility */}
-                <button
-                  id={btnId}
-                  className="btn-accordion actionplan-topic"
-                  aria-expanded={isOpen}
-                  aria-controls={panelId}
-                  onClick={() => toggleTopic(topic)}
-                >
-                  {/* Left: topic + icon + count */}
-                  <span className="flex items-center">
-                    <img
-                      src={iconSrc}
-                      alt={`${topic} icon`}
-                      className="w-6 h-6 ml-2 inline-block"
-                    /> 
-                    {topic}
-                    <span class="recommendation-count">
-                      {count} {count === 1 ? 'recommendation' : 'recommendations'}
-                    </span>
-                    
-                  </span>
-                </button>
-
-                {/* Panel */}
-                <div
-                  id={panelId}
-                  role="region"
-                  aria-labelledby={btnId}
-                  className={`${isOpen ? 'block' : 'hidden'} accordion-panel`}
-                >
-                  {items.map(item => {
-                    const answerOption = item.options.find(o => o.value === item.value);
-                    const answerLabel = answerOption ? answerOption.label : '';
-                    return (
-                      <div key={item.id} className="item-block">
-                        <h3 className="subheading">{item.text}</h3>
-                        <p><strong>Your answer:</strong> {answerLabel}</p>
-                        <p><strong>Recommendation:</strong> {item.recommendation}</p>
+              {/* ======================= FULL ACTION PLAN ======================= */}
+              <section className="action-plan-page mt-8">
+                {/* (kept from your original ActionPlan header) */}
+                <div className="flex justify-between items-center mb-6">
+                  {topics.length > 0 && (
+                    <div className="flex items-center mb-6">
+                      <div className="ml-auto flex gap-3">
+                        <button
+                          onClick={expandAll}
+                          className="btn"
+                          aria-label="Expand all sections"
+                          title="Expand all"
+                        >
+                          Expand all
+                        </button>
+                        <button
+                          onClick={collapseAll}
+                          className="btn"
+                          aria-label="Collapse all sections"
+                          title="Collapse all"
+                        >
+                          Collapse all
+                        </button>
+                        <button
+                          onClick={() => window.print()}
+                          className="btn-print"
+                          aria-label="Print Action Plan"
+                          title="Print"
+                        >
+                          🖨️
+                        </button>
                       </div>
-                    );
-                  })}
+                    </div>
+                  )}
                 </div>
-              </section>
-            );
-          })}
-        </section>
-        {/* ===================== /FULL ACTION PLAN ======================= */}
 
-        {Object.keys(responses).length === 0 && (
-          <p className="results-page__no-results">No results yet. Please complete the questionnaire.</p>
-        )}
+                {topics.length === 0 && (
+                  <p className="mt-4 text-lg">🎉 All set! No action items at this time.</p>
+                )}
+
+                {topics.map((topic) => {
+                  const items = itemsByTopic[topic];
+                  const iconSrc = iconMap[topic.toLowerCase()] || defaultIcon;
+                  const isOpen = openTopics.has(topic);
+                  const panelId = `accordion-panel-${topic.replace(/\s+/g, '-').toLowerCase()}`;
+                  const btnId = `accordion-button-${topic.replace(/\s+/g, '-').toLowerCase()}`;
+                  const count = items.length; // <-- added count
+
+                  return (
+                    <section key={topic} className="mb-8">
+                      {/* Accordion header button for accessibility */}
+                      <button
+                        id={btnId}
+                        className="btn-accordion actionplan-topic"
+                        aria-expanded={isOpen}
+                        aria-controls={panelId}
+                        onClick={() => toggleTopic(topic)}
+                      >
+                        {/* Left: topic + icon + count */}
+                        <span className="flex items-center">
+                          <img
+                            src={iconSrc}
+                            alt={`${topic} icon`}
+                            className="w-6 h-6 ml-2 inline-block"
+                          /> 
+                          {topic}
+                          <span class="recommendation-count">
+                            {count} {count === 1 ? 'recommendation' : 'recommendations'}
+                          </span>
+                          
+                        </span>
+                      </button>
+
+                      {/* Panel */}
+                      <div
+                        id={panelId}
+                        role="region"
+                        aria-labelledby={btnId}
+                        className={`${isOpen ? 'block' : 'hidden'} accordion-panel`}
+                      >
+                        {items.map(item => {
+                          const answerOption = item.options.find(o => o.value === item.value);
+                          const answerLabel = answerOption ? answerOption.label : '';
+                          return (
+                            <div key={item.id} className="item-block">
+                              <h3 className="subheading">{item.text}</h3>
+                              <p><strong>Your answer:</strong> {answerLabel}</p>
+                              <p><strong>Recommendation:</strong> {item.recommendation}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  );
+                })}
+              </section>
+              {/* ===================== /FULL ACTION PLAN ======================= */}
+            </div>
+          </div>
+        </section>
       </main>
     </>
   );

@@ -50,9 +50,12 @@ nav ul li, ul.footer__social-list li{ list-style: none; }
 .header__nav-list { @apply flex items-center space-x-4 ml-auto mr-4; }
 .header__nav { list-style: none; }
 .header__nav-link { @apply text-black hover:text-pathway-dark transition text-base font-medium; }
-.header__nav-link.active::before {
-  content: '';
-  @apply w-2 h-2 bg-leading rounded-full mr-1.5 inline-block align-middle;
+.header__nav-link.active {
+@apply relative;
+}
+.header__nav-link.active::after {
+  content: url('../assets/icons/ball.svg');
+  @apply absolute top-[-1.5rem] left-1/2 -translate-x-1/2 w-6 h-6 object-contain;
 }
 .header__profile-btn {
   @apply p-0 bg-transparent border-none cursor-pointer flex items-center;
@@ -70,6 +73,23 @@ nav ul li, ul.footer__social-list li{ list-style: none; }
   @apply block w-full text-left px-4 py-2 text-sm bg-pathway-primary text-white rounded-[2rem] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary hover:shadow-md;
 }
 .header .btn-login { @apply text-white hover:text-white; }
+
+
+/* Dropdown modifiers */
+.header__nav-item button.header__nav-link {
+@apply p-0 rounded-none bg-transparent border-none cursor-pointer;
+}
+.header__nav-item button.header__nav-link:hover {
+@apply shadow-none;
+}
+.header__dropdown--left {
+@apply left-0 right-auto;
+}
+/* Dropdown items */
+.header__dropdown-item {
+@apply block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition;
+}
+
 
 /* Footer */
 .footer { @apply bg-gray-900 text-gray-200 py-8 mt-8; }
@@ -106,34 +126,54 @@ ul {
 .home-hero__content h1 { @apply text-white font-['Ubuntu'] font-bold; }
 .home-hero__lead { @apply max-w-3xl mx-auto mt-4 text-lg text-gray-100; }
 
-/* Full-bleed sections */
-.home-section { @apply w-full py-12; }
-.home-section--light { @apply bg-gray-100; }
-.home-section--green { background-color: #e6f4ec; }
-.home-section--white { @apply bg-white; }
+/* ===========================
+   PAGE SECTIONS (Generic)
+   =========================== */
+.page-section { @apply w-full py-12; }
+.page-section--light { @apply bg-gray-100; }
+.page-section--green { background-color: #e6f4ec; }
+.page-section--white { @apply bg-white; }
 
-.home-section__inner { @apply container grid md:grid-cols-2 gap-8 items-center max-w-7xl mx-auto px-4; }
-.home-section--partners .home-section__body {
-  grid-column: 1 / -1;
-  @apply w-full max-w-none text-center;
-}
-.home-section--partners .section-heading { @apply text-center font-['Ubuntu'] font-bold; }
-.home-section--partners .partners {
-  @apply mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 justify-items-center w-full max-w-none;
+.page-section__inner { @apply container max-w-7xl mx-auto px-4; }
+@media (min-width: 768px) {
+  .page-section__inner { @apply flex items-center gap-8; }
 }
 
-.home-section__media { @apply order-1; }
-.home-section__media--center { @apply flex items-center justify-center; }
-.home-section__img { @apply w-full h-auto; }
-.home-section__logo { @apply h-20 w-auto; }
-.home-section__body { @apply text-left order-2; }
+/* Order is determined by DOM order; these are just roles */
+.page-section__body { @apply text-left; }
+.page-section__media { @apply flex-shrink-0; }
+.page-section__img { @apply w-full h-auto; }
+.page-section__logo { @apply h-20 w-auto; }
 
-.home-section--partners .home-section__inner { @apply grid-cols-1 max-w-7xl mx-auto px-4; }
-.home-section--partners .home-section__body { @apply w-full max-w-none; }
-.home-section--partners .partners { @apply w-full max-w-none; }
+/* 12-col widths (Bootstrap-like) */
+[class^="col-"], [class*=" col-"] { width: 100%; }
+@media (min-width: 768px) {
+  .col-1 { width: 8.333333%; }
+  .col-2 { width: 16.666667%; }
+  .col-3 { width: 25%; }
+  .col-4 { width: 33.333333%; }
+  .col-5 { width: 41.666667%; }
+  .col-6 { width: 50%; }
+  .col-7 { width: 58.333333%; }
+  .col-8 { width: 66.666667%; }
+  .col-9 { width: 75%; }
+  .col-10 { width: 83.333333%; }
+  .col-11 { width: 91.666667%; }
+  .col-12 { width: 100%; }
+}
+
+/* Partners section variant */
+.page-section--partners .page-section__inner { @apply block; }
+.page-section--partners .page-section__body { @apply w-full max-w-none text-center; }
+.page-section--partners .section-heading { @apply text-center font-['Ubuntu'] font-bold text-2xl; }
+
+
+
 .partners { @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 items-center justify-items-center; }
 .partners__item { @apply list-none; }
-.partners__logo { @apply h-40 w-auto object-contain transition-opacity hover:opacity-80; }
+.partners__link { @apply flex flex-col items-center justify-center gap-2 text-center no-underline; }
+.partners__logo { @apply h-28 w-auto object-contain; }
+.partners__name { @apply text-sm font-semibold  text-gray-700; }
 
 /* Page hero (non-home pages) */
 .page-hero { @apply relative w-full; padding-top: var(--header-h); }
@@ -157,6 +197,16 @@ ul {
   .advancing { @apply text-advancing; }
   .developing { @apply text-developing; }
   .needs-improvement { @apply text-needs-improvement; }
+  /* Color classes */
+  .text-leading { color: var(--leading); }
+  .text-advancing { color: var(--advancing); }
+  .text-developing { color: var(--developing); }
+  .text-needs-improvement { color: var(--needs-improvement); }
+  .text-in-progress { color: var(--in-progress); }
+  /* Topic stats table */
+  .topic-stats td {
+    @apply px-4;
+  }
 }
 
 /* Auth Page */

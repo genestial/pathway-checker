@@ -18,6 +18,10 @@ const Footer = () => {
 
         <nav className="footer__nav" aria-label="Footer">
           <ul className="footer__nav-list">
+            <li className="footer__nav-item">
+              <Link to="/toolkit" className="footer__link">PATHWAY Guidelines Toolkit</Link>
+            </li>
+
             {links.privacy && (
               <li className="footer__nav-item">
                 <Link to={links.privacy} className="footer__link">Privacy</Link>

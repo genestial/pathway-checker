@@ -10,10 +10,13 @@ import ActionPlanPage from './pages/ActionPlanPage';
 import Auth from './components/Auth';
 import QuestionnaireGate from './pages/QuestionnaireGate';
 import MyAssessmentsPage from './pages/MyAssessmentsPage';
+import AboutPage from './pages/AboutPage';
+import ToolkitPage from './pages/ToolkitPage'; 
 
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import './styles/main.css';
+import AboutTheToolPage from './pages/AboutTheToolPage';
 
 /** Choose router by env */
 const useHash = import.meta.env.VITE_ROUTER === 'hash';
@@ -106,6 +109,11 @@ function AppContent() {
     </ProtectedRoute>
   }
 />
+
+<Route path="/about" element={<AboutPage />} />
+<Route path="/toolkit" element={<ToolkitPage />} />
+<Route path="/tool" element={<AboutTheToolPage />} />
+
 
     </Routes>
   );

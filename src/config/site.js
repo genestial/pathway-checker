@@ -8,5 +8,6 @@ export const site = {
     privacy: "/privacy",
     terms: "/terms",
     contact: "https://aspon.com.cy/contact-us/",
+    toolkit: "#",
   },
 };
