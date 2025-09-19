@@ -2,6 +2,7 @@ import { BrowserRouter, HashRouter, Route, Routes, Navigate, useNavigate } from 
 import { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 
 import HomePage from './pages/HomePage';
 import QuestionnairePage from './pages/QuestionnairePage';
@@ -12,11 +13,14 @@ import QuestionnaireGate from './pages/QuestionnaireGate';
 import MyAssessmentsPage from './pages/MyAssessmentsPage';
 import AboutPage from './pages/AboutPage';
 import ToolkitPage from './pages/ToolkitPage'; 
+import AboutTheToolPage from './pages/AboutTheToolPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsPage from './pages/TermsPage';
+import ProfilePage from './pages/ProfilePage';
 
 import { auth } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import './styles/main.css';
-import AboutTheToolPage from './pages/AboutTheToolPage';
 
 /** Choose router by env */
 const useHash = import.meta.env.VITE_ROUTER === 'hash';
@@ -25,13 +29,10 @@ const RouterImpl = useHash ? HashRouter : BrowserRouter;
 /** Normalize basename for BrowserRouter only */
 function getBasename() {
   let raw = import.meta.env.BASE_URL || '/';
-  // Guard against "./" or "." producing "/./"
   if (raw === './' || raw === '.') return '';
-  // Remove trailing slash(es)
   raw = raw.replace(/\/+$/, '');
-  // Ensure leading slash if not empty
   if (raw && !raw.startsWith('/')) raw = `/${raw}`;
-  return raw; // e.g. "/clients/aspon/pathwaychecker"
+  return raw;
 }
 
 function AppContent() {
@@ -45,7 +46,6 @@ function AppContent() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       handleAuthChange(u);
-      // If user logs in while on /login, send them to the app root (relative to basename)
       if (u && window.location.pathname.endsWith('/login')) {
         navigate('/', { replace: true });
       }
@@ -64,57 +64,59 @@ function AppContent() {
     <Routes>
       <Route path="/login" element={<Auth onAuthChange={handleAuthChange} />} />
       <Route path="/" element={<HomePage />} />
-      {/* Gate that decides resume/edit/new */}
-<Route
-  path="/questionnaire"
-  element={
-    <ProtectedRoute>
-      <QuestionnaireGate />
-    </ProtectedRoute>
-  }
-/>
-
-{/* Canonical param routes */}
-<Route
-  path="/questionnaire/:assessmentId"
-  element={
-    <ProtectedRoute>
-      <QuestionnairePage />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/results/:assessmentId"
-  element={
-    <ProtectedRoute>
-      <ResultsPage />
-    </ProtectedRoute>
-  }
-/>
-<Route
-  path="/action-plan/:assessmentId"
-  element={
-    <ProtectedRoute>
-      <ActionPlanPage />
-    </ProtectedRoute>
-  }
-/>
-
-{/* Assessments log */}
-<Route
-  path="/assessments"
-  element={
-    <ProtectedRoute>
-      <MyAssessmentsPage />
-    </ProtectedRoute>
-  }
-/>
-
-<Route path="/about" element={<AboutPage />} />
-<Route path="/toolkit" element={<ToolkitPage />} />
-<Route path="/tool" element={<AboutTheToolPage />} />
-
-
+      <Route
+        path="/questionnaire"
+        element={
+          <ProtectedRoute>
+            <QuestionnaireGate />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/questionnaire/:assessmentId"
+        element={
+          <ProtectedRoute>
+            <QuestionnairePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/results/:assessmentId"
+        element={
+          <ProtectedRoute>
+            <ResultsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/action-plan/:assessmentId"
+        element={
+          <ProtectedRoute>
+            <ActionPlanPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/assessments"
+        element={
+          <ProtectedRoute>
+            <MyAssessmentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/account"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/toolkit" element={<ToolkitPage />} />
+      <Route path="/tool" element={<AboutTheToolPage />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+      <Route path="/terms" element={<TermsPage />} />
     </Routes>
   );
 }
@@ -123,6 +125,7 @@ export default function App() {
   const basename = useHash ? undefined : getBasename();
   return (
     <RouterImpl {...(!useHash && basename !== undefined ? { basename } : {})}>
+      <ScrollToTop />
       <Header />
       <main className="page">
         <AppContent />

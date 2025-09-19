@@ -6,8 +6,8 @@ const partners = [
   { name: 'Cyprus Football Association', country: 'Cyprus - Project Coordinator', href: 'https://www.cfa.com.cy/', logo: `${import.meta.env.BASE_URL}assets/partners/cfa.png` },
   { name: 'Anorthosis Famagusta FC', country: 'Cyprus', href: 'https://anorthosisfc.com.cy/', logo: `${import.meta.env.BASE_URL}assets/partners/anorthosis_FC.png` },
   { name: 'M.G.S. Panserraikos PAE 1946', country: 'Greece', href: 'https://panserraikosfc.gr/', logo: `${import.meta.env.BASE_URL}assets/partners/panserraikos.png` },
-  { name: 'Foul Training', country: 'Greece', href: 'https://akademik.bg/', logo: `${import.meta.env.BASE_URL}assets/partners/efip.png` },
-  { name: 'Municipal Football Club Academic Svishtov', country: 'Bulgaria', href: 'https://www.foultraining.gr/', logo: `${import.meta.env.BASE_URL}assets/partners/OFC_Akademik_Svishtov.png` },
+  { name: 'Foul Training', country: 'Greece', href: 'https://www.foultraining.gr/', logo: `${import.meta.env.BASE_URL}assets/partners/efip.png` },
+  { name: 'Municipal Football Club Academic Svishtov', country: 'Bulgaria', href: 'https://akademik.bg/', logo: `${import.meta.env.BASE_URL}assets/partners/OFC_Akademik_Svishtov.png` },
 ];
 
 const AboutPage = () => {

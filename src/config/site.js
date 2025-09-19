@@ -1,13 +1,13 @@
 export const site = {
   name: "PATHWAY Sustainability Checker",
   social: {
-    facebook: "https://www.facebook.com/AsponConsultingLtd",
-    linkedin: "https://www.linkedin.com/company/asponconsultingltd/",
+    facebook: "https://www.facebook.com/profile.php?id=61570405572846",
+    instagram: "https://www.instagram.com/pathway_eu/",
   },
   links: {
-    privacy: "/privacy",
+    privacy: "/privacy-policy",
     terms: "/terms",
-    contact: "https://aspon.com.cy/contact-us/",
+    contact: "mailto:info@pathwaychecker.eu",
     toolkit: "#",
   },
 };

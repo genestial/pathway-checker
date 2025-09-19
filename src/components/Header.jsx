@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import pathwayLogo from "../assets/pathway-logo.svg";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [aboutDropdown, setAboutDropdown] = useState(false);
   const navigate = useNavigate();
@@ -21,10 +24,23 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        try {
+          const docRef = doc(db, 'users', currentUser.uid, 'profile', 'data');
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setProfile(docSnap.data());
+          }
+        } catch (err) {
+          console.error('Failed to fetch profile:', err);
+        }
+      } else {
+        setProfile(null);
+      }
     });
-    return () => unsubscribe();
+    return () => unsubscribe;
   }, [auth]);
 
   const handleLogout = async () => {
@@ -94,7 +110,7 @@ const Header = () => {
                     aria-label="User profile"
                   >
                     <img
-                      src={user.photoURL || `${import.meta.env.BASE_URL}assets/default-profile.png`}
+                      src={profile?.logoUrl || user.photoURL || `${import.meta.env.BASE_URL}assets/default-profile.png`}
                       alt="Profile"
                       className="header__profile-img"
                     />
@@ -102,19 +118,20 @@ const Header = () => {
                   {showDropdown && (
                     <div className="header__dropdown">
                       <Link
-                        to="/assessments"
-                        className="header__dropdown-item"
-                        onClick={() => setShowDropdown(false)}
-                      >
-                        My Assessments
-                      </Link>
-                      <Link
                         to="/account"
                         className="header__dropdown-item"
                         onClick={() => setShowDropdown(false)}
                       >
                         My Account
                       </Link>
+                      <Link
+                        to="/assessments"
+                        className="header__dropdown-item"
+                        onClick={() => setShowDropdown(false)}
+                      >
+                        My Assessments
+                      </Link>
+                      
                       <button
                         onClick={handleLogout}
                         className="header__dropdown-btn"

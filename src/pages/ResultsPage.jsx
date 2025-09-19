@@ -7,11 +7,11 @@ import ScoreCard from '../components/ScoreCard';
 import PageHero from '../components/PageHero';
 import questions from '../data/questions';
 
-// Pillar icons (one per pillar)
+// Pillar icons
 import energyIcon from '../assets/icons/energy.png';
 import diversityIcon from '../assets/icons/diversity.png';
 
-// Topic icons (for Action Plan, as in your original)
+// Topic icons
 import accessibilityIcon from '../assets/icons/accessibility.png';
 import wasteIcon from '../assets/icons/waste.png';
 import transportIcon from '../assets/icons/transport.png';
@@ -40,13 +40,11 @@ export class ErrorBoundary extends Component {
 
 const ResultsPage = ({ user }) => {
   const { assessmentId } = useParams();
-
   const topicsByPillar = {
     'Environmental Sustainability': ['Energy and Emissions', 'Transport', 'Waste', 'Water'],
     'Social Sustainability': ['Accessibility', 'Community Engagement', 'Diversity and Inclusion', 'Event Safety', 'Fan Engagement and Education'],
   };
-
-  const [authedUser, setAuthedUser] = useState(user || null); // support prop OR auth
+  const [authedUser, setAuthedUser] = useState(user || null);
   const [responses, setResponses] = useState({});
   const [assessmentTitle, setAssessmentTitle] = useState('');
   const canvasRefs = {
@@ -54,15 +52,17 @@ const ResultsPage = ({ user }) => {
     'environmental-sustainability-pillar': useRef(null),
     'social-sustainability-pillar': useRef(null),
   };
+  const [openTopics, setOpenTopics] = useState(new Set());
 
-  // keep user in this page even if not passed as prop
   useEffect(() => {
-    if (user) { setAuthedUser(user); return; }
+    if (user) {
+      setAuthedUser(user);
+      return;
+    }
     const unsub = onAuthStateChanged(auth, (u) => setAuthedUser(u || null));
     return () => unsub();
   }, [user]);
 
-  // Load responses for this *specific* assessment
   useEffect(() => {
     const fetchResponses = async () => {
       if (!authedUser || !assessmentId) return;
@@ -90,19 +90,17 @@ const ResultsPage = ({ user }) => {
             console.error('Firestore snapshot error:', error.message);
           }
         );
-        return unsubscribe;
+        return () => unsubscribe();
       } catch (error) {
         console.error('Firestore fetch error:', error.message);
       }
     };
-    const unsub = fetchResponses();
-    return () => { if (typeof unsub === 'function') unsub(); };
+    fetchResponses();
+    return () => {};
   }, [authedUser, assessmentId]);
 
-  // ----- scoring helpers (your original logic) -----
   const getOptionValue = (question, response) => {
     if (response === undefined || response === null) return 0;
-    // supports "0"/"1"/"2"/"-1" and legacy label storage
     const numericValue = parseInt(response, 10);
     if (!isNaN(numericValue) && [0, 1, 2, -1].includes(numericValue)) {
       return numericValue;
@@ -114,17 +112,14 @@ const ResultsPage = ({ user }) => {
   const calculateTopicScore = (topic) => {
     const topicQuestions = questions.filter(q => q.topic === topic);
     if (topicQuestions.length === 0) return { percentage: null, valid: false, complete: false };
-
     const allAnswered = topicQuestions.every(q => responses[q.id] !== undefined);
     if (!allAnswered) {
       return { percentage: null, valid: true, complete: false };
     }
-
     const validResponses = topicQuestions.filter(q => {
       const value = getOptionValue(q, responses[q.id]);
       return value !== -1 && value !== undefined;
     });
-
     const totalScore = validResponses.reduce((sum, q) => sum + getOptionValue(q, responses[q.id]), 0);
     const maxScore = validResponses.length * 2;
     const percentage = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
@@ -135,10 +130,8 @@ const ResultsPage = ({ user }) => {
     const topics = topicsByPillar[pillar];
     const topicScores = topics.map(topic => calculateTopicScore(topic));
     const completedCount = topicScores.filter(s => s.complete).length;
-
     if (completedCount === 0) return { percentage: null, valid: false, complete: false };
     if (completedCount < topics.length) return { percentage: null, valid: true, complete: false };
-
     const totalPerc = topicScores.reduce((sum, s) => sum + s.percentage, 0);
     const avg = totalPerc / topicScores.length;
     return { percentage: avg, valid: true, complete: true };
@@ -150,7 +143,6 @@ const ResultsPage = ({ user }) => {
     const completeTopics = allTopicScores.filter(score => score.complete);
     if (validTopics.length === 0) return { percentage: null, valid: false, complete: false };
     if (completeTopics.length < allTopicScores.length) return { percentage: null, valid: true, complete: false };
-
     const totalPercentage = validTopics.reduce((sum, score) => sum + score.percentage, 0);
     const averagePercentage = totalPercentage / validTopics.length;
     return { percentage: averagePercentage, valid: true, complete: true };
@@ -167,7 +159,6 @@ const ResultsPage = ({ user }) => {
   const envScore = useMemo(() => calculatePillarScore('Environmental Sustainability'), [responses]);
   const socialScore = useMemo(() => calculatePillarScore('Social Sustainability'), [responses]);
 
-  // Action Plan items (kept as-is)
   const itemsByTopic = useMemo(() => {
     const byTopic = {};
     questions.forEach(q => {
@@ -200,15 +191,6 @@ const ResultsPage = ({ user }) => {
   const pillarIconFor = (pillar) =>
     pillar === 'Environmental Sustainability' ? energyIcon : diversityIcon;
 
-  const [openTopics, setOpenTopics] = useState(new Set(topics));
-
-  const toggleTopic = (topic) => {
-    const newSet = new Set(openTopics);
-    if (newSet.has(topic)) newSet.delete(topic);
-    else newSet.add(topic);
-    setOpenTopics(newSet);
-  };
-
   const expandAll = () => setOpenTopics(new Set(topics));
   const collapseAll = () => setOpenTopics(new Set());
 
@@ -229,8 +211,12 @@ const ResultsPage = ({ user }) => {
           <div className="page-section__inner container">
             <div className="page-section__body col-12">
               <h2 className="text-center mb-4 text-xl font-bold">{assessmentTitle || 'Untitled Assessment'}</h2>
-              {/* Overall gauge */}
-              <div className="text-center mb-8">
+              <div className="scoring-bands mt-8">
+                <h3 className="section-heading mb-4">Scoring Bands</h3>
+               
+              </div>
+               <div className="pillars-container">
+                <div className="pillar-block text-center">
                 <ScoreCard
                   canvasRef={canvasRefs.overall}
                   percentage={overallScore.percentage}
@@ -239,11 +225,43 @@ const ResultsPage = ({ user }) => {
                   ariaLabel="Overall Sustainability Gauge"
                   displayText={overallScore.complete ? `${Math.round(overallScore.percentage)}%` : 'In progress'}
                 />
-              </div>
+                </div>
+                 <div className="pillar-block text-center">
+                   <table className="table table--striped text-left">
+                  <thead>
+                    <tr>
+                      <th>Score Range (%)</th>
+                      <th>Rating</th>
+                      <th>Interpretation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr >
+                      <td>0–39%</td>
+                      <td className="needs-improvement">Needs Improvement</td>
+                      <td>Sustainability practices are limited or missing. Immediate improvements needed.</td>
+                    </tr>
+                    <tr >
+                      <td>40–64%</td>
+                      <td className="developing">Developing</td>
+                      <td>Some practices in place, but not systematic or strategic. Good foundation.</td>
+                    </tr>
+                    <tr >
+                      <td>65–84%</td>
+                      <td className="advancing">Advancing</td>
+                      <td>Solid performance with structured implementation. Room for further optimisation.</td>
+                    </tr>
+                    <tr>
+                      <td>85–100%</td>
+                      <td className="leading">Leading</td>
+                      <td>Leading practice. Strong systems, innovation, and clear alignment with goals.</td>
+                    </tr>
+                  </tbody>
+                </table>
+                 </div>
 
-              {/* Pillars in 2-column layout */}
+              </div>
               <div className="pillars-container">
-                {/* Environmental pillar */}
                 <div className="pillar-block text-center">
                   <div className="pillar-header flex justify-center items-center gap-3 mb-4">
                     <img
@@ -280,8 +298,6 @@ const ResultsPage = ({ user }) => {
                     </tbody>
                   </table>
                 </div>
-
-                {/* Social pillar */}
                 <div className="pillar-block text-center">
                   <div className="pillar-header flex justify-center items-center gap-3 mb-4">
                     <img
@@ -319,10 +335,7 @@ const ResultsPage = ({ user }) => {
                   </table>
                 </div>
               </div>
-
-              {/* ======================= FULL ACTION PLAN ======================= */}
               <section className="action-plan-page mt-8">
-                {/* (kept from your original ActionPlan header) */}
                 <div className="flex justify-between items-center mb-6">
                   {topics.length > 0 && (
                     <div className="flex items-center mb-6">
@@ -355,45 +368,42 @@ const ResultsPage = ({ user }) => {
                     </div>
                   )}
                 </div>
-
                 {topics.length === 0 && (
                   <p className="mt-4 text-lg">🎉 All set! No action items at this time.</p>
                 )}
-
                 {topics.map((topic) => {
                   const items = itemsByTopic[topic];
                   const iconSrc = iconMap[topic.toLowerCase()] || defaultIcon;
                   const isOpen = openTopics.has(topic);
                   const panelId = `accordion-panel-${topic.replace(/\s+/g, '-').toLowerCase()}`;
                   const btnId = `accordion-button-${topic.replace(/\s+/g, '-').toLowerCase()}`;
-                  const count = items.length; // <-- added count
-
+                  const count = items.length;
                   return (
                     <section key={topic} className="mb-8">
-                      {/* Accordion header button for accessibility */}
                       <button
                         id={btnId}
                         className="btn-accordion actionplan-topic"
                         aria-expanded={isOpen}
                         aria-controls={panelId}
-                        onClick={() => toggleTopic(topic)}
+                        onClick={() => {
+                          const newSet = new Set(openTopics);
+                          if (newSet.has(topic)) newSet.delete(topic);
+                          else newSet.add(topic);
+                          setOpenTopics(newSet);
+                        }}
                       >
-                        {/* Left: topic + icon + count */}
                         <span className="flex items-center">
                           <img
                             src={iconSrc}
                             alt={`${topic} icon`}
                             className="w-6 h-6 ml-2 inline-block"
-                          /> 
+                          />
                           {topic}
-                          <span class="recommendation-count">
+                          <span className="recommendation-count">
                             {count} {count === 1 ? 'recommendation' : 'recommendations'}
                           </span>
-                          
                         </span>
                       </button>
-
-                      {/* Panel */}
                       <div
                         id={panelId}
                         role="region"
@@ -407,7 +417,13 @@ const ResultsPage = ({ user }) => {
                             <div key={item.id} className="item-block">
                               <h3 className="subheading">{item.text}</h3>
                               <p><strong>Your answer:</strong> {answerLabel}</p>
-                              <p><strong>Recommendation:</strong> {item.recommendation}</p>
+                              <p className="recommendation-text flex items-center">
+                                <span className="recommendation-label bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-sm font-bold">
+                                  Recommendation
+                                </span>
+                                <span className="recommendation-icon ml-2 text-yellow-500">💡</span>
+                                <span className="ml-2">{item.recommendation}</span>
+                              </p>
                             </div>
                           );
                         })}
@@ -416,7 +432,6 @@ const ResultsPage = ({ user }) => {
                   );
                 })}
               </section>
-              {/* ===================== /FULL ACTION PLAN ======================= */}
             </div>
           </div>
         </section>

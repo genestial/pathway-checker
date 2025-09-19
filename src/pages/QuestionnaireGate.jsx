@@ -1,8 +1,3 @@
-// Decides what to do when a user navigates to /questionnaire
-// - If a draft exists: redirect to that draft
-// - Else: if a completed exists: show choices (Edit last / Start new / Start new prefilled)
-// - Else: create a new draft and redirect
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -12,8 +7,9 @@ import {
   createDraftFrom,
 } from '../services/assessments';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase'; 
+import { auth } from '../firebase';
 import PageHero from '../components/PageHero';
+import { Link } from 'react-router-dom';
 
 export default function QuestionnaireGate() {
   const nav = useNavigate();
@@ -54,50 +50,44 @@ export default function QuestionnaireGate() {
   const completedDate =
     latestCompleted?.completedAt?.toDate?.()?.toLocaleDateString?.() ?? '—';
 
-    return (
+  return (
     <>
-        <PageHero 
-            title="Sustainability Checker"
-            subtitle={<>This tool will help you understand where your organisation currently stands, while offering targeted guidance on how to improve.</>}
-
-        />
-
-        <main className="questionnaire-gate">
+      <PageHero 
+        title="Sustainability Checker"
+        subtitle={<>This tool will help you understand where your organisation currently stands, while offering targeted guidance on how to improve.</>}
+      />
+      <main className="questionnaire-gate">
         <div className="container">
-            <p className="muted">
+          <p className="muted">
             You completed an assessment on <strong>{completedDate}</strong>. What would you like to do?
-            </p>
-
-            <div className="buttons" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          </p>
+          <div className="buttons" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <button
-                className="btn btn-primary"
-                onClick={() => nav(`/questionnaire/${latestCompleted.id}`)}
-            >
-                Edit last assessment
-            </button>
-
-            <button
-                className="btn"
-                onClick={async () => {
+              className="btn"
+              onClick={async () => {
                 const d = await createDraft(user.uid, {});
                 nav(`/questionnaire/${d.id}`);
-                }}
+              }}
             >
-                Start new (empty)
+              Start new (empty)
             </button>
-
             <button
-                className="btn"
-                onClick={async () => {
+              className="btn"
+              onClick={async () => {
                 const d = await createDraftFrom(user.uid, latestCompleted.id, {});
                 nav(`/questionnaire/${d.id}`);
-                }}
+              }}
             >
-                Start new (prefilled from last)
+              Start new (prefilled from last)
             </button>
-            </div>
+          </div>
+          <div className="mt-6">
+            <Link to="/assessments" className="text-pathway-primary hover:text-pathway-dark">
+              View My Assessments
+            </Link>
+          </div>
         </div>
-        </main>
+      </main>
     </>
-    );
+  );
 }

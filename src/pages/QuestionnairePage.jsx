@@ -1,18 +1,18 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { db, auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, setDoc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { Tabs, TabList, Tab, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import { Tooltip } from 'react-tooltip';
-import { useNavigate, useParams } from 'react-router-dom';
-import PageHero from '../components/PageHero';   // small hero band
+import PageHero from '../components/PageHero';
 import questions from '../data/questions';
 
-const DEBUG = false; // set false to hide the panel/logs
+const DEBUG = false;
 
 function QuestionnairePage() {
-  const [user, setUser] = useState(null);            // <-- get user from auth (no prop)
+  const [user, setUser] = useState(null);
   const [responses, setResponses] = useState({});
   const [tabIndex, setTabIndex] = useState(0);
   const [showDebug, setShowDebug] = useState(DEBUG);
@@ -20,17 +20,15 @@ function QuestionnairePage() {
   const navigate = useNavigate();
   const { assessmentId } = useParams();
 
-  // Subscribe to auth so `user` is always available here
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
     return () => unsub();
   }, []);
 
-  // --- normalization: always keep strings in state ---
   const normalizeEntryToString = (v) => {
     if (v == null) return '';
-    if (typeof v === 'string') return v;           // '0'|'1'|'2'|'-1'|'N/A'
-    if (typeof v === 'number') return String(v);   // 0|1|2|-1 -> "0"|"1"|"2"|"-1"
+    if (typeof v === 'string') return v;
+    if (typeof v === 'number') return String(v);
     if (typeof v === 'object') {
       if (v.na) return 'N/A';
       if (v.value != null) return String(v.value);
@@ -38,14 +36,13 @@ function QuestionnairePage() {
     }
     return '';
   };
+
   const normalizeMapToStrings = (obj = {}) =>
     Object.fromEntries(Object.entries(obj).map(([k, v]) => [String(k), normalizeEntryToString(v)]));
 
-  // Track fields briefly to avoid snapshot overwriting a fresh local pick
-  const pendingRef = useRef(new Map()); // Map<qid, expiresAtMs>
+  const pendingRef = useRef(new Map());
   const prevResponsesRef = useRef({});
 
-  // Topics + helpers (unchanged layout)
   const topics = useMemo(() => Array.from(new Set(questions.map(q => q.topic))), []);
   const getQuestionsByTopic = (topic) => questions.filter(q => q.topic === topic);
 
@@ -56,7 +53,6 @@ function QuestionnairePage() {
   ).length;
   const isAllComplete = answeredCount === totalQuestions;
 
-  // Live responses from Firestore (by assessmentId)
   useEffect(() => {
     if (!user || !assessmentId) return;
     const ref = doc(db, 'users', user.uid, 'assessments', assessmentId);
@@ -70,7 +66,6 @@ function QuestionnairePage() {
       const serverRes = normalizeMapToStrings(snap.data().responses || {});
       const now = Date.now();
       const merged = { ...serverRes };
-      // keep any very-recent local picks
       pendingRef.current.forEach((expiresAt, qid) => {
         if (expiresAt > now && responses[qid] !== undefined) merged[qid] = responses[qid];
         else if (expiresAt <= now) pendingRef.current.delete(qid);
@@ -87,26 +82,20 @@ function QuestionnairePage() {
           console.groupEnd();
         }
       }
-
       prevResponsesRef.current = merged;
       setResponses(merged);
     });
-
     return () => unsub();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, assessmentId /* responses read via ref inside */]);
+  }, [user, assessmentId]);
 
-  // Body class (unchanged)
   useEffect(() => {
     document.body.classList.add('page--questionnaire');
     return () => document.body.classList.remove('page--questionnaire');
   }, []);
 
-  // Nav handlers (unchanged)
   const handlePrevious = () => setTabIndex(i => Math.max(i - 1, 0));
   const handleNext = () => setTabIndex(i => Math.min(i + 1, topics.length - 1));
 
-  // Save one answer (strings) with short "pending" window
   const handleResponseChange = async (id, value) => {
     if (!user || !assessmentId) {
       if (DEBUG) console.warn('[SELECT ignored] no user or assessmentId', { id, value, user, assessmentId });
@@ -115,8 +104,6 @@ function QuestionnairePage() {
     const qid = String(id);
     const strVal = normalizeEntryToString(value);
     const path = `users/${user.uid}/assessments/${assessmentId}`;
-
-    // Validate option membership (debug)
     const q = questions.find(x => String(x.id) === qid);
     if (DEBUG && q) {
       const opts = (q.options || []).map(o => String(o?.value));
@@ -124,12 +111,10 @@ function QuestionnairePage() {
       if (!present) console.warn('[SELECT] value not in options', { qid, selected: strVal, available: opts });
       else console.log('[SELECT] local change', { qid, selected: strVal });
     }
-
     const newRes = { ...responses, [qid]: strVal };
-    setResponses(newRes);               // optimistic UI
-    prevResponsesRef.current = newRes;  // baseline for next snapshot diff
+    setResponses(newRes);
+    prevResponsesRef.current = newRes;
     pendingRef.current.set(qid, Date.now() + 1200);
-
     try {
       const ref = doc(db, 'users', user.uid, 'assessments', assessmentId);
       await setDoc(ref, { responses: newRes, updatedAt: serverTimestamp() }, { merge: true });
@@ -139,14 +124,12 @@ function QuestionnairePage() {
     }
   };
 
-  // Topic completion (unchanged)
   const isTopicComplete = (topic) =>
     getQuestionsByTopic(topic).every(q => {
       const resp = responses[String(q.id)];
       return resp !== undefined && resp !== null && resp !== '' && resp !== 'N/A';
     });
 
-  // Results snapshot for submit
   const computeResultsSnapshot = () => {
     const parseVal = (v) => {
       if (v === 'N/A') return null;
@@ -154,39 +137,30 @@ function QuestionnairePage() {
       const n = Number(v);
       return Number.isNaN(n) ? null : n;
     };
-
     const byPillar = {};
-    const byTopic  = {};
+    const byTopic = {};
     let sum = 0, cnt = 0;
-
     for (const q of questions) {
       const raw = responses[String(q.id)];
       const val = parseVal(raw);
       if (val == null) continue;
-
       const numericOpts = (q.options || [])
         .map(o => (typeof o.value === 'number' ? o.value : Number(o.value)))
         .filter(v => Number.isFinite(v) && v >= 0);
       const max = numericOpts.length ? Math.max(...numericOpts) : 2;
-
       const pct = max > 0 ? (val / max) * 100 : 0;
       sum += pct; cnt += 1;
-
       const pk = q.pillar || q.pillarId || q.pillarName || 'General';
-      const tk = q.topic  || q.topicId  || q.topicName  || 'General';
-
+      const tk = q.topic || q.topicId || q.topicName || 'General';
       byPillar[pk] = byPillar[pk] || { sum: 0, count: 0 };
       byPillar[pk].sum += pct; byPillar[pk].count += 1;
-
       byTopic[tk] = byTopic[tk] || { sum: 0, count: 0 };
       byTopic[tk].sum += pct; byTopic[tk].count += 1;
     }
-
     const overall = cnt ? sum / cnt : 0;
     const finalize = (obj) =>
       Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, v.count ? v.sum / v.count : 0]));
-    const band = (s => (s>=85?'Leading':s>=65?'Advancing':s>=40?'Developing':'Needs Improvement'))(overall);
-
+    const band = (s => (s >= 85 ? 'Leading' : s >= 65 ? 'Advancing' : s >= 40 ? 'Developing' : 'Needs Improvement'))(overall);
     const actionItems = questions
       .map(q => {
         const n = Number(responses[String(q.id)]);
@@ -198,11 +172,9 @@ function QuestionnairePage() {
         };
       })
       .filter(i => i.value === 0 || i.value === 1);
-
     return { overall, band, byPillar: finalize(byPillar), byTopic: finalize(byTopic), actionItems };
   };
 
-  // Submit: mark completed + persist snapshot
   const handleSubmit = async () => {
     if (!user || !assessmentId) return;
     const ref = doc(db, 'users', user.uid, 'assessments', assessmentId);
@@ -220,9 +192,7 @@ function QuestionnairePage() {
     }
   };
 
-  // Debug helpers
-  const currentTopicQs = getQuestionsByTopic(topics[tabIndex] || topics[0] || '');
-  const debugRows = currentTopicQs.map(q => {
+  const debugRows = topics.map(topic => getQuestionsByTopic(topic)).flat().map(q => {
     const picked = responses[String(q.id)] ?? '';
     const opts = (q.options || []).map(o => String(o?.value));
     const present = opts.includes(String(picked));
@@ -233,12 +203,10 @@ function QuestionnairePage() {
     <>
       <PageHero
         title="Sustainability Checker"
-        subtitle={<>Please complete the questions below. Select <strong>Not applicable</strong> only if the question is out of scope for your association.</>}
+        subtitle={<>Please complete the questions below. Select <strong>Not applicable</strong> only if the question is out of scope for your organisation.</>}
       />
-
       <main className="questionnaire-page">
         <Tabs selectedIndex={tabIndex} onSelect={setTabIndex} className="questionnaire-tabs">
-          {/* Sidebar */}
           <aside className="sidebar-tabs">
             <div className="a11y-progress mb-6 relative">
               <div
@@ -253,7 +221,6 @@ function QuestionnairePage() {
                 {answeredCount} of {totalQuestions} completed
               </span>
             </div>
-
             <TabList className="tab-list-vertical">
               {topics.map((topic, idx) => {
                 const completed = isTopicComplete(topic);
@@ -278,8 +245,6 @@ function QuestionnairePage() {
               })}
             </TabList>
           </aside>
-
-          {/* Content */}
           <section className="tab-content">
             {DEBUG && (
               <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'flex-end' }}>
@@ -288,7 +253,6 @@ function QuestionnairePage() {
                 </label>
               </div>
             )}
-
             {showDebug && (
               <div className="card" style={{ marginBottom: 12 }}>
                 <div style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12 }}>
@@ -313,7 +277,6 @@ function QuestionnairePage() {
                 </div>
               </div>
             )}
-
             {topics.map((topic, idx) => (
               <TabPanel key={idx} className="space-y-6">
                 {getQuestionsByTopic(topic).map(q => {
@@ -323,7 +286,15 @@ function QuestionnairePage() {
                   return (
                     <div key={qid} className="question-block">
                       <label className="question-title">
-                        {q.text} <span className="question-id">[Q: {qid}]</span>
+                        {q.text}
+                        {q.summary && (
+                          <button
+                            className="info-button ml-2 px-2 py-1 bg-pathway-primary text-white rounded-full text-xs"
+                            data-tooltip-id={`tooltip-${qid}`}
+                          >
+                            i
+                          </button>
+                        )}
                       </label>
                       <select
                         value={current === undefined || current === null ? '' : String(current)}
@@ -337,34 +308,40 @@ function QuestionnairePage() {
                           </option>
                         ))}
                       </select>
+                      {q.summary && (
+                        <Tooltip
+                          id={`tooltip-${qid}`}
+                          place="right"
+                          clickable={true}
+                          style={{ maxWidth: '300px', padding: '8px', zIndex: 10 }}
+                        >
+                          <p>{q.summary}</p>
+                          
+                          <p className="toolkit-link toolkit-link-hidden">
+                            Ref: {q.toolkitLink} <br/>
+                            </p>
+                          
+                        </Tooltip>
+                      )}
                     </div>
                   );
                 })}
               </TabPanel>
             ))}
-
-            {questions.map(q => (
-              <Tooltip key={String(q.id)} id={`tooltip-${String(q.id)}`} place="top" effect="solid" />
-            ))}
           </section>
         </Tabs>
       </main>
-
-      {/* ✅ Sticky action bar */}
       <div className="questionnaire-actions" role="region" aria-label="Questionnaire navigation">
         <div className="questionnaire-actions__inner">
           <button onClick={handlePrevious} className="btn btn--lg" disabled={tabIndex === 0}>
             Previous
           </button>
-
           <div className="questionnaire-actions__spacer" />
-
           {tabIndex < topics.length - 1 && (
             <button onClick={handleNext} className="btn btn--lg">
               Next
             </button>
           )}
-
           <button
             onClick={handleSubmit}
             className="btn btn--lg"

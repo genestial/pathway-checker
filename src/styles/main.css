@@ -64,13 +64,13 @@ nav ul li, ul.footer__social-list li{ list-style: none; }
   @apply w-8 h-8 rounded-full object-cover;
 }
 .header__dropdown {
-  @apply absolute right-0 top-[var(--header-h)] mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-md py-2 z-10 overflow-hidden;
+  @apply absolute right-0 top-[var(--header-h)] mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-md p-3 z-10 overflow-hidden;
 }
 .header__dropdown-email {
   @apply block px-4 py-2 text-sm text-gray-700 font-medium truncate;
 }
 .header__dropdown-btn {
-  @apply block w-full text-left px-4 py-2 text-sm bg-pathway-primary text-white rounded-[2rem] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary hover:shadow-md;
+  @apply block w-full text-center mt-2 px-4 py-2 text-sm bg-pathway-primary text-white rounded-[2rem] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary hover:shadow-md;
 }
 .header .btn-login { @apply text-white hover:text-white; }
 
@@ -309,7 +309,7 @@ ul {
 }
 
 .recommendation-count{
-   @apply text-sm font-['Manrope'] font-normal pl-2;
+   @apply text-sm  font-normal pl-2;
 }
 .questionnaire-gate .container{
   @apply pt-8;
@@ -332,4 +332,21 @@ ul {
 @media (min-width: 1025px) {
   .header__nav-link:hover { @apply text-pathway-dark underline; }
   button:hover, .a11y-button:hover { @apply shadow-md; }
+}
+
+.toolkit-link-hidden {
+  /*display: none;*/
+}
+.toolkit-link{ @apply text-xs text-gray-400 font-normal; }
+
+.react-tooltip {
+  max-width: 300px !important;
+  padding: 8px !important;
+  z-index: 10 !important;
+  font-family: 'Open Sans', sans-serif !important;
+}
+@media (max-width: 640px) {
+  .react-tooltip {
+    max-width: 80vw !important;
+  }
 }
