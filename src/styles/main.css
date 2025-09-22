@@ -64,7 +64,7 @@ nav ul li, ul.footer__social-list li{ list-style: none; }
   @apply w-8 h-8 rounded-full object-cover;
 }
 .header__dropdown {
-  @apply absolute right-0 top-[var(--header-h)] mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-md p-3 z-10 overflow-hidden;
+  @apply absolute right-0 top-[var(--header-h)]  w-48 bg-white border border-gray-200 rounded-md shadow-md p-3 z-10 overflow-hidden;
 }
 .header__dropdown-email {
   @apply block px-4 py-2 text-sm text-gray-700 font-medium truncate;
@@ -349,4 +349,25 @@ ul {
   .react-tooltip {
     max-width: 80vw !important;
   }
+}
+
+.table-scoringchart tr td,
+.table-scoringchart tr th
+{
+  @apply p-2 border-gray-200 border;
+}
+
+.table-scoringchart tr th{ @apply text-white bg-gray-900;}
+
+td.needs-improvement{@apply bg-needs-improvement text-white;}
+td.developing{ @apply bg-developing text-white;}
+td.advancing{ @apply bg-advancing text-white;}
+td.leading{ @apply bg-leading text-white;}
+
+th.score{ @apply min-w-[90px];}
+
+@media print {
+  .header { display: none !important; }
+  .results-page { padding-top: 0 !important; } /* Remove top padding */
+  .btn-print { display: none !important; } /* Hide print button */
 }

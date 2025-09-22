@@ -227,37 +227,37 @@ const ResultsPage = ({ user }) => {
                 />
                 </div>
                  <div className="pillar-block text-center">
-                   <table className="table table--striped text-left">
-                  <thead>
-                    <tr>
-                      <th>Score Range (%)</th>
-                      <th>Rating</th>
-                      <th>Interpretation</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr >
-                      <td>0–39%</td>
-                      <td className="needs-improvement">Needs Improvement</td>
-                      <td>Sustainability practices are limited or missing. Immediate improvements needed.</td>
-                    </tr>
-                    <tr >
-                      <td>40–64%</td>
-                      <td className="developing">Developing</td>
-                      <td>Some practices in place, but not systematic or strategic. Good foundation.</td>
-                    </tr>
-                    <tr >
-                      <td>65–84%</td>
-                      <td className="advancing">Advancing</td>
-                      <td>Solid performance with structured implementation. Room for further optimisation.</td>
-                    </tr>
-                    <tr>
-                      <td>85–100%</td>
-                      <td className="leading">Leading</td>
-                      <td>Leading practice. Strong systems, innovation, and clear alignment with goals.</td>
-                    </tr>
-                  </tbody>
-                </table>
+                    <table className="table table-scoringchart table--striped text-left text-sm">
+                      <thead>
+                        <tr>
+                          <th className="score">Score (%)</th>
+                          <th>Rating</th>
+                          <th>Interpretation</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr >
+                          <td>0–39%</td>
+                          <td className="needs-improvement">Needs Improvement</td>
+                          <td>Sustainability practices are limited or missing. Immediate improvements needed.</td>
+                        </tr>
+                        <tr >
+                          <td>40–64%</td>
+                          <td className="developing">Developing</td>
+                          <td>Some practices in place, but not systematic or strategic. Good foundation.</td>
+                        </tr>
+                        <tr >
+                          <td>65–84%</td>
+                          <td className="advancing">Advancing</td>
+                          <td>Solid performance with structured implementation. Room for further optimisation.</td>
+                        </tr>
+                        <tr>
+                          <td>85–100%</td>
+                          <td className="leading">Leading</td>
+                          <td>Leading practice. Strong systems, innovation, and clear alignment with goals.</td>
+                        </tr>
+                      </tbody>
+                  </table>
                  </div>
 
               </div>
@@ -357,7 +357,10 @@ const ResultsPage = ({ user }) => {
                           Collapse all
                         </button>
                         <button
-                          onClick={() => window.print()}
+                          onClick={() => {
+                            expandAll(); // Auto-expand all topics
+                            setTimeout(() => window.print(), 100); // Delay for state update
+                          }}
                           className="btn-print"
                           aria-label="Print Action Plan"
                           title="Print"

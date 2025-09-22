@@ -16,14 +16,12 @@ export default function ToolkitPage() {
         title="PATHWAY Guidelines Toolkit"
       />
       <main className="toolkit-page">
-        <section className="home-section home-section--light">
-          <div className="home-section__inner flex items-center">
-            <div className="about-section__body--wide">
+        <section className="page-section page-section--light">
+          <div className="page-section__inner container max-w-7xl mx-auto px-4">
+            <div className="page-section__body col-8">
               <p>
                 The PATHWAY Guidelines Toolkit provides step-by-step guidance on how football organisations can improve their sustainability performance. It complements the PATHWAY Sustainability Checker by explaining in more detail how to implement recommended actions, with practical solutions, examples of good practice, and monitoring tips.
               </p>
-            
-
               {toolkitUrl ? (
                 <a
                   href={toolkitUrl}
@@ -42,12 +40,11 @@ export default function ToolkitPage() {
                 </>
               )}
             </div>
-
-            <div className="about-section__media about-section__media--second">
+            <div className="page-section__media col-4">
               <img
-                src={`${import.meta.env.BASE_URL}assets/checker-graphic.svg`}
+                src={`${import.meta.env.BASE_URL}assets/earth.svg`}
                 alt=""
-                className="about-section__logo"
+                
               />
             </div>
           </div>
