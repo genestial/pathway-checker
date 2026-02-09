@@ -42,7 +42,7 @@ const AboutPage = () => {
               <img
                 src={`${import.meta.env.BASE_URL}assets/checker-graphic.svg`}
                 alt=""
-                className="page-section__logo"
+                
               />
             </div>
             <div className="page-section__body col-9">

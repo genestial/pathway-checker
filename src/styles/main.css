@@ -111,6 +111,31 @@ nav ul li, ul.footer__social-list li{ list-style: none; }
   @apply text-xs text-gray-400 leading-snug max-w-3xl;
 }
 
+/* Footer Bottom Section */
+.footer__bottom {
+  @apply max-w-6xl mx-auto px-4 mt-4 flex flex-col md:flex-row items-center justify-between gap-3 text-gray-400 text-sm;
+}
+
+.footer__copy{
+  @apply text-sm;
+}
+
+.footer__divider {
+  @apply mx-2;
+}
+
+.footer__powered {
+  @apply flex items-center gap-1;
+}
+
+.footer__powered-logo {
+  @apply h-4 w-4;
+}
+
+.footer__powered-link {
+  @apply text-[#8f509e] font-bold hover:underline;
+}
+
 ul {
   @apply ml-6 list-disc;
 }

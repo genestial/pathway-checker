@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { site } from "../config/site";
 import SocialIcon from "./SocialIcon"; // shared component
 import euLogo from "/assets/cofunded_neg.webp"; // served from public/assets
+import genestialLogo from "/assets/genestial-badge.png"; // served from public/assets
 
 const Footer = () => {
   const year = new Date().getFullYear();
@@ -13,7 +14,6 @@ const Footer = () => {
       <div className="footer__container">
         <div className="footer__brand">
           <div className="footer__name">{name}</div>
-          <div className="footer__copy">© {year} {name}. All rights reserved.</div>
         </div>
 
         <nav className="footer__nav" aria-label="Footer">
@@ -44,7 +44,6 @@ const Footer = () => {
                 </a>
               </li>
             )}
-
           </ul>
         </nav>
 
@@ -76,6 +75,23 @@ const Footer = () => {
           and do not necessarily reflect those of the European Union or the European Education and Culture 
           Executive Agency (EACEA). Neither the European Union nor EACEA can be held responsible for them.
         </p>
+      </div>
+
+      <div className="footer__bottom">
+        <div className="footer__copy">© {year} {name}. All rights reserved.</div>
+        <span className="footer__divider"> </span>
+        <div className="footer__powered">
+          <img src={genestialLogo} alt="Genestial Badge" className="footer__powered-logo" />
+          <span>Powered by </span>
+          <a
+            href="https://genestial.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="footer__powered-link"
+          >
+            GENESTIAL
+          </a>
+        </div>
       </div>
     </footer>
   );
