@@ -30,32 +30,61 @@ p {
 
 /* Base button overrides */
 button, .a11y-button {
-  @apply px-6 py-3 rounded-[2rem] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary;
+  @apply px-6 py-3 rounded-[2rem] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary;
+}
+button:hover:not(:disabled), .a11y-button:hover:not(:disabled) {
+  @apply bg-black text-white shadow-lg;
 }
 
 .btn-print {
-  @apply inline-flex items-center justify-center px-3 py-3 border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition;
+  @apply inline-flex items-center justify-center px-3 py-3 border border-gray-300 bg-white text-gray-700 transition-all duration-150 shadow-sm;
   margin-top: 0 !important;
   line-height: 1 !important;
+}
+.btn-print:hover {
+  @apply bg-black text-white border-black shadow-lg;
 }
 
 /* Reset list styling for navigation and footer menus */
 nav ul li, ul.footer__social-list li{ list-style: none; }
 
 /* Header */
-.header { @apply fixed inset-x-0 top-0 z-10 bg-transparent; height: var(--header-h); }
-.header--scrolled { @apply bg-white; }
+.header { @apply fixed inset-x-0 top-0 z-10 bg-transparent transition-all duration-300; height: var(--header-h); }
+.header--scrolled { @apply bg-white shadow-sm; }
 .header__container { @apply flex items-center justify-between px-4 max-w-7xl mx-auto; height: var(--header-h); }
-.header__logo { @apply h-10 md:h-11; }
-.header__nav-list { @apply flex items-center space-x-4 ml-auto mr-4; }
-.header__nav { list-style: none; }
-.header__nav-link { @apply text-black hover:text-pathway-dark transition text-base font-medium; }
-.header__nav-link.active {
-@apply relative;
+.header__logo { 
+  height: 40px;
+  width: auto;
+  image-rendering: auto;
+  shape-rendering: geometricPrecision;
+  text-rendering: optimizeLegibility;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: block;
+  object-fit: contain;
+  /* Ensure smooth SVG rendering */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
-.header__nav-link.active::after {
-  content: url('../assets/icons/ball.svg');
-  @apply absolute top-[-1.5rem] left-1/2 -translate-x-1/2 w-6 h-6 object-contain;
+@media (min-width: 768px) {
+  .header__logo {
+    height: 44px;
+  }
+}
+.header__nav-list { @apply flex items-center space-x-6 ml-auto mr-4; }
+.header__nav { list-style: none; }
+.header__nav-link { @apply text-gray-700 hover:text-pathway-primary transition-all duration-150 text-base font-medium py-2 px-3 rounded-md relative; }
+.header__nav-link:hover:not(.active) {
+  @apply bg-pathway-light;
+}
+.header__nav-link.active {
+  @apply bg-pathway-primary text-white;
+}
+.header__nav-link.active:hover {
+  @apply bg-pathway-primary text-white;
 }
 .header__profile-btn {
   @apply p-0 bg-transparent border-none cursor-pointer flex items-center;
@@ -65,45 +94,59 @@ nav ul li, ul.footer__social-list li{ list-style: none; }
   @apply w-8 h-8 rounded-full object-cover;
 }
 .header__dropdown {
-  @apply absolute right-0 top-[var(--header-h)]  w-48 bg-white border border-gray-200 rounded-md shadow-md p-3 z-10 overflow-hidden;
+  @apply absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg p-2 z-20 overflow-hidden;
 }
 .header__dropdown-email {
   @apply block px-4 py-2 text-sm text-gray-700 font-medium truncate;
 }
 .header__dropdown-btn {
-  @apply block w-full text-center mt-2 px-4 py-2 text-sm bg-pathway-primary text-white rounded-[2rem] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary hover:shadow-md;
+  @apply block w-full text-center mt-2 px-4 py-2 text-sm bg-pathway-primary text-white rounded-[2rem] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary shadow-sm;
 }
-.header .btn-login { @apply text-white hover:text-white; }
+.header__dropdown-btn:hover {
+  @apply bg-black text-white shadow-lg;
+}
+.header .btn-login { 
+  @apply text-white bg-pathway-primary shadow-sm;
+}
+.header .btn-login:hover {
+  @apply bg-black text-white shadow-lg;
+}
 
 
 /* Dropdown modifiers */
 .header__nav-item button.header__nav-link {
-@apply p-0 rounded-none bg-transparent border-none cursor-pointer;
+  @apply py-2 px-3 rounded-md bg-transparent border-none cursor-pointer;
 }
-.header__nav-item button.header__nav-link:hover {
-@apply shadow-none;
+.header__nav-item button.header__nav-link:hover:not(.active) {
+  @apply bg-pathway-primary text-white shadow-none;
+}
+.header__nav-item button.header__nav-link:hover.active {
+  @apply bg-pathway-primary text-white shadow-none;
+}
+.header__nav-item button.header__nav-link.active {
+  @apply bg-pathway-primary text-white;
 }
 .header__dropdown--left {
-@apply left-0 right-auto;
+  @apply left-0 right-auto;
 }
 /* Dropdown items */
 .header__dropdown-item {
-@apply block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition;
+  @apply block px-4 py-2 text-sm text-gray-700 hover:bg-pathway-light hover:text-pathway-primary rounded-md transition-colors;
 }
 
 
 /* Footer */
 .footer { @apply bg-gray-900 text-gray-200 py-8 mt-8; }
-.footer__container { @apply max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6; }
+.footer__container { @apply max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6; }
 .footer__brand { @apply text-center md:text-left; }
-.footer__name { @apply font-['Ubuntu'] text-lg font-bold; }
+.footer__name { @apply font-ubuntu text-lg font-bold; }
 .footer__copy { @apply text-xs text-gray-400; }
 .footer__nav-list { @apply flex gap-4; }
 .footer__link { @apply text-gray-300 hover:text-white transition; }
 .footer__social-list { @apply flex gap-3; }
 .footer__social-link svg { @apply fill-gray-300 hover:fill-white transition; }
 .footer__eu {
-  @apply max-w-6xl mx-auto px-4 mt-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-3 text-left;
+  @apply max-w-7xl mx-auto px-4 mt-6 flex flex-col md:flex-row items-center md:items-start justify-between gap-3 text-left;
 }
 .footer__eu-logo {
   @apply h-10 flex-shrink-0;
@@ -114,7 +157,7 @@ nav ul li, ul.footer__social-list li{ list-style: none; }
 
 /* Footer Bottom Section */
 .footer__bottom {
-  @apply max-w-6xl mx-auto px-4 mt-4 flex flex-col md:flex-row items-center justify-between gap-3 text-gray-400 text-sm;
+  @apply max-w-7xl mx-auto px-4 mt-4 flex flex-col md:flex-row items-center justify-between gap-3 text-gray-400 text-sm;
 }
 
 .footer__copy{
@@ -134,7 +177,10 @@ nav ul li, ul.footer__social-list li{ list-style: none; }
 }
 
 .footer__powered-link {
-  @apply text-[#8f509e] font-bold hover:underline;
+  @apply text-[#8f509e] font-bold transition-all duration-150;
+}
+.footer__powered-link:hover {
+  @apply text-white opacity-90;
 }
 
 ul {
@@ -142,34 +188,34 @@ ul {
 }
 
 /* Home Page */
-.home-page { @apply pt-16 text-center; }
+.home-page { @apply pt-16; }
 
 /* Home hero */
 .home-hero { @apply relative isolate bg-cover bg-center w-full; min-height: min(80vh, 720px); padding-top: var(--header-h); }
 .home-hero__overlay { @apply absolute inset-0 bg-black/40; }
 .container { @apply max-w-7xl mx-auto px-4; }
 .home-hero__content { @apply relative text-white py-16 flex flex-col items-center justify-center; }
-.home-hero__content h1 { @apply text-white font-['Ubuntu'] font-bold; }
+.home-hero__content h1 { @apply text-white font-ubuntu font-bold; }
 .home-hero__lead { @apply max-w-3xl mx-auto mt-4 text-lg text-gray-100; }
 
 /* ===========================
    PAGE SECTIONS (Generic)
    =========================== */
-.page-section { @apply w-full py-12; }
+.page-section { @apply w-full py-10; }
 .page-section--light { @apply bg-gray-100; }
 .page-section--green { background-color: #e6f4ec; }
 .page-section--white { @apply bg-white; }
 
-.page-section__inner { @apply container max-w-7xl mx-auto px-4; }
+.page-section__inner { @apply container max-w-6xl mx-auto px-4; }
 @media (min-width: 768px) {
-  .page-section__inner { @apply flex items-center gap-8; }
+  .page-section__inner { @apply flex items-center gap-6; }
 }
 
 /* Order is determined by DOM order; these are just roles */
 .page-section__body { @apply text-left; }
-.page-section__media { @apply flex-shrink-0; }
-.page-section__img { @apply w-full h-auto; }
-.page-section__logo { @apply h-20 w-auto; }
+.page-section__media { @apply flex-shrink-0 flex items-center; }
+.page-section__img { @apply w-full h-auto max-w-md mx-auto; }
+.page-section__logo { @apply h-24 w-auto mx-auto; }
 
 /* 12-col widths (Bootstrap-like) */
 [class^="col-"], [class*=" col-"] { width: 100%; }
@@ -191,7 +237,7 @@ ul {
 /* Partners section variant */
 .page-section--partners .page-section__inner { @apply block; }
 .page-section--partners .page-section__body { @apply w-full max-w-none text-center; }
-.page-section--partners .section-heading { @apply text-center font-['Ubuntu'] font-bold text-2xl; }
+.page-section--partners .section-heading { @apply text-center font-ubuntu font-bold text-2xl; }
 
 /* Toolkit page */
 .toolkit-page__image {
@@ -210,18 +256,34 @@ ul {
 .page-hero { @apply relative w-full; padding-top: var(--header-h); }
 .page-hero__band { @apply bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-400 w-full; }
 .page-hero__inner { @apply container py-10 max-w-7xl mx-auto px-4; }
-.page-hero__title { @apply text-white text-3xl font-['Ubuntu'] font-bold text-center; }
+.page-hero__title { @apply text-white text-3xl font-ubuntu font-bold text-center; }
 .page-hero__subtitle { @apply text-white/90 mt-2 text-base md:text-lg text-center; }
 
 /* Typography + Headings */
 @layer components {
-  .page-heading { @apply text-4xl font-['Ubuntu'] font-bold text-pathway-primary mb-8 text-center; }
-  .section-heading { @apply text-3xl font-['Ubuntu'] font-bold flex items-center mb-6 cursor-pointer; }
-  .section-heading:hover { @apply text-pathway-primary; }
+  .page-heading { @apply text-4xl font-ubuntu font-bold text-pathway-primary mb-8 text-center; }
+  .section-heading { @apply text-3xl font-ubuntu font-bold flex items-center mb-6; }
   .subheading { @apply text-xl font-medium mb-4 mt-6; }
   .item-label { @apply font-semibold text-base; }
   .item-block { @apply bg-gray-50 p-4 rounded-md; }
-  .btn, button { @apply bg-pathway-primary text-white inline-block px-4 py-2 rounded-[2rem] transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary; }
+  .btn, button { 
+    @apply bg-pathway-primary text-white inline-block px-4 py-2 rounded-[2rem] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary shadow-sm;
+  }
+  .btn:hover:not(:disabled):not(.btn-secondary), button:hover:not(:disabled):not(.btn-secondary) {
+    @apply bg-black text-white shadow-lg;
+  }
+  .btn-primary {
+    @apply bg-pathway-primary text-white inline-flex items-center justify-center px-6 py-3 rounded-[2rem] transition-all duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-pathway-primary shadow-sm;
+  }
+  .btn-primary:hover:not(:disabled) {
+    @apply bg-black text-white shadow-lg;
+  }
+  .btn-secondary {
+    @apply bg-white text-pathway-primary border-2 border-pathway-primary inline-flex items-center justify-center;
+  }
+  .btn-secondary:hover:not(:disabled) {
+    @apply bg-black text-white border-black shadow-lg;
+  }
   .score-card__overlay { @apply absolute inset-0 flex items-center justify-center text-3xl font-bold text-black; }
   .in-progress { @apply text-in-progress; }
   .leading { @apply text-leading; }
@@ -255,14 +317,14 @@ ul {
 
 /* Score Card */
 .score-card { @apply text-center mb-8 p-6; }
-.score-card__title { @apply text-4xl font-['Ubuntu'] font-bold; }
+.score-card__title { @apply text-4xl font-ubuntu font-bold; }
 .score-card__canvas { @apply mx-auto block; }
 .score-card__value { @apply text-2xl mt-2; }
 .score-card__label { @apply text-gray-600 mt-1; }
 
 /* Topic Sections */
 .topic-section { @apply text-center mb-8 p-6; }
-.topic-section__title { @apply text-2xl font-['Ubuntu'] font-bold mb-4; }
+.topic-section__title { @apply text-2xl font-ubuntu font-bold mb-4; }
 .topic-section__canvas { @apply mx-auto block mb-4; }
 .topic-section__grid { @apply grid grid-cols-1 sm:grid-cols-2 gap-4; }
 .topic-section__item { @apply text-center; }
@@ -307,16 +369,18 @@ ul {
 .tab-content { @apply pb-24; }
 .tab-content { @apply flex-1 pl-6; }
 .question-block { padding: 15px; }
-.question-title { @apply flex justify-between items-center text-xl font-['Ubuntu'] font-bold mb-4; }
+.question-title { @apply flex justify-between items-center text-xl font-ubuntu font-bold mb-4; }
 .question-text { @apply text-left; }
 .question-id { @apply text-xs text-gray-400 font-normal ml-4; }
 
 /* Accordion header (button) */
 .btn-accordion {
-  @apply w-full flex items-center justify-between text-left text-xl font-['Ubuntu'] font-bold px-4 py-3 bg-white text-black border border-gray-200 rounded-md shadow-sm transition;
+  @apply w-full flex items-center justify-between text-left text-xl font-ubuntu font-bold px-4 py-3 bg-white text-black border border-gray-200 rounded-md shadow-sm transition;
   margin-top: 0 !important;
 }
-.btn-accordion:hover { @apply bg-gray-50; }
+.btn-accordion:hover { 
+  @apply bg-gray-50 shadow-md;
+}
 .btn-accordion:focus-visible { @apply outline-none ring-2 ring-emerald-500/40; }
 .btn-accordion[aria-expanded="true"] { @apply bg-emerald-50 border-emerald-200; }
 .btn-accordion__status { @apply ml-3 text-sm text-gray-500 hidden md:inline; }
@@ -349,7 +413,7 @@ ul {
 @media (max-width: 640px) {
   .home-page, .results-page, .auth-container { @apply pt-16; }
   .score-card, .topic-section { @apply p-6; }
-  .topic-section__title { @apply text-xl font-['Ubuntu'] font-bold; }
+  .topic-section__title { @apply text-xl font-ubuntu font-bold; }
   .topic-section__grid { @apply grid-cols-1; }
   .header__nav-list { @apply flex-col space-y-2; }
   .header__logo { @apply h-8; }
@@ -361,8 +425,7 @@ ul {
   .header__logo { @apply h-10; }
 }
 @media (min-width: 1025px) {
-  .header__nav-link:hover { @apply text-pathway-dark underline; }
-  button:hover, .a11y-button:hover { @apply shadow-md; }
+  .header__nav-link:hover { @apply text-pathway-primary opacity-90; }
 }
 
 .toolkit-link-hidden {

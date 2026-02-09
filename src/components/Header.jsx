@@ -99,7 +99,7 @@ const Header = () => {
               )}
             </li>
             <li className="header__nav-item">
-              <Link to="/toolkit" className="header__nav-link">The Toolkit</Link>
+              <NavLink to="/toolkit" className="header__nav-link">The Toolkit</NavLink>
             </li>
             <li className="header__nav-item relative">
               {user ? (

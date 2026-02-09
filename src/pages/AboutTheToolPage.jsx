@@ -114,7 +114,7 @@ const AboutTheToolPage = () => {
                 The option to mark some questions as “Not Applicable” ensures that your results reflect your actual scope and level of control.
               </p>
 
-              <Link to="/about" className="btn mt-3" aria-label="Learn more about the project">
+              <Link to="/about" className="btn btn-primary mt-3" aria-label="Learn more about the project">
                 More about the project
               </Link>
             </div>

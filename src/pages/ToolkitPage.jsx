@@ -32,7 +32,7 @@ export default function ToolkitPage() {
                 href={toolkitPdfUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn"
+                className="btn btn-primary"
                 onClick={handleDownload}
                 download="PATHWAY-Guidelines-Toolkit.pdf"
               >

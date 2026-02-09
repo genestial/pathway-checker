@@ -18,6 +18,8 @@ export default {
         'pathway-dark': 'var(--pathway-dark, #0a5f2d)',
       },
       fontFamily: {
+        ubuntu: ['Ubuntu', 'sans-serif'],
+        sans: ['Open Sans', 'sans-serif'],
         poppins: ['Poppins', 'sans-serif'],
         montserrat: ['Montserrat', 'sans-serif'],
       },

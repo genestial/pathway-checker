@@ -70,8 +70,9 @@ const ProfilePage = () => {
       setError('Organization name is required');
       return;
     }
-    if (editProfile.logoUrl && !isValidImageUrl(editProfile.logoUrl)) {
-      setError('Please provide a valid image URL (e.g., ends with .png, .jpg, .jpeg, .gif, .svg, .webp)');
+    // Validate URL only if provided (base64 data URLs are also valid)
+    if (editProfile.logoUrl && !editProfile.logoUrl.startsWith('data:image/') && !isValidImageUrl(editProfile.logoUrl)) {
+      setError('Please provide a valid image URL (e.g., ends with .png, .jpg, .jpeg, .gif, .svg, .webp) or upload an image file');
       return;
     }
     if (newPassword && newPassword !== confirmPassword) {
@@ -152,6 +153,92 @@ const ProfilePage = () => {
     return email.match(/^[^@]+@[^@]+\.[^@]+$/);
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+
+    // Validate file size (2MB limit for Firestore)
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Image size must be less than 2MB. Please compress the image or use a URL instead.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Compress image if needed and convert to base64
+      const compressedFile = await compressImage(file);
+      const reader = new FileReader();
+      
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        // Store as data URL directly in Firestore (completely free!)
+        // This replaces any existing URL
+        setEditProfile({ ...editProfile, logoUrl: base64String });
+        setSuccess('Image uploaded successfully');
+        setLoading(false);
+        // Clear the file input
+        e.target.value = '';
+      };
+      
+      reader.onerror = () => {
+        setError('Failed to read image file');
+        setLoading(false);
+      };
+      
+      reader.readAsDataURL(compressedFile);
+    } catch (err) {
+      setError('Failed to process image: ' + err.message);
+      setLoading(false);
+    }
+  };
+
+  const compressImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          // Resize if too large (max 800px on longest side)
+          const maxDimension = 800;
+          if (width > height && width > maxDimension) {
+            height = (height / width) * maxDimension;
+            width = maxDimension;
+          } else if (height > maxDimension) {
+            width = (width / height) * maxDimension;
+            height = maxDimension;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          canvas.toBlob(
+            (blob) => {
+              resolve(blob || file);
+            },
+            'image/jpeg',
+            0.85 // 85% quality
+          );
+        };
+      };
+    });
+  };
+
   if (!user) {
     return <div className="page">Please log in to view this page.</div>;
   }
@@ -202,24 +289,60 @@ const ProfilePage = () => {
                     />
                   </div>
                   <div className="profile__field">
-                    <label className="profile__label font-bold">Logo URL (Optional)</label>
-                    <input
-                      type="url"
-                      value={editProfile.logoUrl}
-                      onChange={(e) => setEditProfile({ ...editProfile, logoUrl: e.target.value })}
-                      placeholder="Enter logo image URL (e.g., https://example.com/logo.png)"
-                      className="p-2 rounded-[1rem] mb-2 w-full border border-gray-300"
-                    />
-                    <p className="text-sm text-gray-500 mb-2">
-                      Provide a publicly accessible image URL. You can use services like Imgur or your website to host the logo.
-                    </p>
+                    <label className="profile__label font-bold">Logo (Optional)</label>
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Upload Image</label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="p-2 rounded-[1rem] mb-2 w-full border border-gray-300"
+                        />
+                        <p className="text-xs text-gray-500">
+                          Upload an image file (PNG, JPG, GIF, max 2MB). This will replace any URL you've entered.
+                        </p>
+                      </div>
+                      <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                          <span className="px-2 bg-white text-gray-500">OR</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Provide Image URL</label>
+                        <input
+                          type="url"
+                          value={editProfile.logoUrl && !editProfile.logoUrl.startsWith('data:image/') ? editProfile.logoUrl : ''}
+                          onChange={(e) => {
+                            const url = e.target.value;
+                            // Only set if it's not a base64 data URL (those come from uploads)
+                            if (!url.startsWith('data:image/')) {
+                              setEditProfile({ ...editProfile, logoUrl: url });
+                            }
+                          }}
+                          placeholder="Enter logo image URL (e.g., https://example.com/logo.png)"
+                          className="p-2 rounded-[1rem] mb-2 w-full border border-gray-300"
+                        />
+                        <p className="text-xs text-gray-500">
+                          Provide a publicly accessible image URL. This will replace any uploaded image.
+                        </p>
+                      </div>
+                    </div>
                     {editProfile.logoUrl && (
-                      <img
-                        src={editProfile.logoUrl}
-                        alt="Organization logo"
-                        className="w-24 h-24 object-contain mt-2"
-                        onError={() => setEditProfile({ ...editProfile, logoUrl: '' })}
-                      />
+                      <div className="mt-3">
+                        <img
+                          src={editProfile.logoUrl}
+                          alt="Organization logo preview"
+                          className="w-24 h-24 object-contain border border-gray-300 rounded"
+                          onError={() => setEditProfile({ ...editProfile, logoUrl: '' })}
+                        />
+                        {editProfile.logoUrl.startsWith('data:image/') && (
+                          <p className="text-xs text-gray-500 mt-1">Uploaded image</p>
+                        )}
+                      </div>
                     )}
                   </div>
                   {!isGoogleUser && (
