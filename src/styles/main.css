@@ -59,6 +59,7 @@ nav ul li, ul.footer__social-list li{ list-style: none; }
 }
 .header__profile-btn {
   @apply p-0 bg-transparent border-none cursor-pointer flex items-center;
+  background-color: #119046 !important;
 }
 .header__profile-img {
   @apply w-8 h-8 rounded-full object-cover;
@@ -191,6 +192,11 @@ ul {
 .page-section--partners .page-section__inner { @apply block; }
 .page-section--partners .page-section__body { @apply w-full max-w-none text-center; }
 .page-section--partners .section-heading { @apply text-center font-['Ubuntu'] font-bold text-2xl; }
+
+/* Toolkit page */
+.toolkit-page__image {
+  @apply max-w-[200px] h-auto;
+}
 
 
 

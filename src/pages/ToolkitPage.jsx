@@ -1,14 +1,20 @@
 import React from 'react';
 import PageHero from '../components/PageHero';
-import { site } from '../config/site';
+import { analytics } from '../firebase';
+import { logEvent } from 'firebase/analytics';
 
 export default function ToolkitPage() {
-  const rawUrl = site?.links?.toolkit || '';
-  const isConfigured =
-    typeof rawUrl === 'string' &&
-    rawUrl.trim() !== '' &&
-    rawUrl.trim() !== '#';
-  const toolkitUrl = isConfigured ? rawUrl : null;
+  const toolkitPdfUrl = `${import.meta.env.BASE_URL}assets/toolkit.pdf`;
+
+  const handleDownload = () => {
+    if (analytics) {
+      logEvent(analytics, 'file_download', {
+        file_name: 'PATHWAY Guidelines Toolkit',
+        file_extension: 'pdf',
+        link_url: toolkitPdfUrl,
+      });
+    }
+  };
 
   return (
     <>
@@ -22,29 +28,35 @@ export default function ToolkitPage() {
               <p>
                 The PATHWAY Guidelines Toolkit provides step-by-step guidance on how football organisations can improve their sustainability performance. It complements the PATHWAY Sustainability Checker by explaining in more detail how to implement recommended actions, with practical solutions, examples of good practice, and monitoring tips.
               </p>
-              {toolkitUrl ? (
-                <a
-                  href={toolkitUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn"
-                >
-                  Download the Toolkit
-                </a>
-              ) : (
-                <>
-                  <button className="btn" disabled aria-disabled="true">
-                    Download the Toolkit
-                  </button>
-                  <div className="muted mt-2">Coming soon...</div>
-                </>
-              )}
+              <a
+                href={toolkitPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn"
+                onClick={handleDownload}
+                download="PATHWAY-Guidelines-Toolkit.pdf"
+              >
+                Download the Toolkit
+              </a>
             </div>
-            <div className="page-section__media col-4">
+            <div className="page-section__media col-4 flex justify-end">
               <img
                 src={`${import.meta.env.BASE_URL}assets/earth.svg`}
                 alt=""
-                
+                className="toolkit-page__image"
+              />
+            </div>
+          </div>
+          
+          {/* Full-width PDF embed row */}
+          <div className="container max-w-7xl mx-auto px-4 mt-8">
+            <div className="w-full">
+              <embed
+                src={`${toolkitPdfUrl}#toolbar=1&navpanes=1&scrollbar=1`}
+                type="application/pdf"
+                className="w-full border border-gray-300 rounded-lg"
+                style={{ minHeight: '800px', height: '80vh' }}
+                title="PATHWAY Guidelines Toolkit PDF"
               />
             </div>
           </div>
